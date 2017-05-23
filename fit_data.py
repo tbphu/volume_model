@@ -70,6 +70,22 @@ def compute_sqd_distance(simulation_result, data):
 		dist += np.nansum((data[col_name] - simulation_result[col_name])**2)
 	return dist
 
+def truncate_data(data)
+	""" truncate data in such a way that there are no leading or trailing nan values left"""
+	pos_min = 0
+	pos_max = np.inf
+	for variable in data:
+		data_vec_wo_nan = np.where(~np.isnan(data[variable]))
+		start_pos = data_vec_wo_nan[0][0]
+    	end_pos = data_vec_wo_nan[0][-1]
+    	if start_pos > pos_min:
+    		pos_min = start_pos
+    	if end_pos < pos_max:
+    		pos_max = end_pos
+    for variable in data:
+    	data[variable] = data[variable][pos_min:pos_max]
+    return data
+
 def simulate_model_with_changed_parameters(parameter_values, model, parameter_ids, data):
 	param_dict = dict(zip(parameter_ids, parameter_values))
 	model.reset()
@@ -100,7 +116,7 @@ def fit_model_to_data(model, data, parameters_to_fit, bounds={}):
 						minimizer_kwargs=minimizer_kwargs)
 
 
-def plot_model_simulation_for_fitting_result(model, fitting_result, data, parameter_ids, subplot=True):
+def plot_model_simulation_and_fitting_result(model, fitting_result, data, parameter_ids, subplot=True):
 	parameter_values=fitting_result.x
 	model_result=simulate_model_with_changed_parameters(parameter_values, model, parameter_ids, data)
 	rows_and_cols = np.ceil(np.sqrt(len(data)-1))

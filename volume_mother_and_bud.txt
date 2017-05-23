@@ -1,0 +1,42 @@
+import "volume_reference.txt"
+
+model volume_mother_and_bud
+
+  mother: volume_rheology();  
+  bud: volume_rheology();
+
+  k_diff_c = 1. * 1e-15;
+  k_diff_v = 1. * 1e-15;
+  k_nutrient = 0.05;
+  q0 = 0.85;
+  q = q0;
+  d_Vb := 0;
+  division_time = 7200; // s
+
+
+  ////// Seperation and Partitioning of macromolecules ########################
+  // Uncomment the following 4 lines to enable Separation and Partitioning:
+  // t_seperation = 2400
+  // k_diff_c := 1 - (1.0/(1.0 + exp(-0.05*(time - t_seperation))));
+  // k_diff_v := 1 - (1.0/(1.0 + exp(-0.05*(time - t_seperation))));
+  // d_Vb := 0.003*(1 - (1.0/(1.0 + exp(-0.05*(time - t_seperation)))));
+  /////////////////////////////////////////////////////////////////////////////
+
+
+  //=> mother.c_i; k_nutrient * mother.G;
+  //=> bud.c_i; k_nutrient * bud.G;
+  mother.c_i -> bud.c_i; k_diff_c * (mother.c_i - bud.c_i);   
+
+  mother.V_os' = mother.dV_os - k_diff_v * (mother.pi_t - bud.pi_t);  
+  bud.V_os' = bud.dV_os + k_diff_v * (mother.pi_t - bud.pi_t);
+  
+  //bud.V_os = 1.;
+  //bud.V_b = 0.5;
+
+  bud.V_b' = d_Vb; //.003;
+  mother.V_b' = -d_Vb; //-0.003;
+
+  bud.E := mother.E * q;
+
+
+end

@@ -6,9 +6,9 @@ import tellurium as te
 from scipy.optimize import basinhopping
 
 
-mothercells_file_path = 'mothercells.p'
-daughtercells_data_path = 'daughtercells.p'
-time_file_path = "time.p"
+mothercells_file_path = 'data/mothercells.p'
+daughtercells_data_path = 'data/daughtercells.p'
+time_file_path = "data/time.p"
 
 def load_data():
 	mothercells_data = pickle.load(open(mothercells_file_path, "rb"))

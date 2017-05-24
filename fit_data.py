@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tellurium as te
 from scipy.optimize import basinhopping
-
+plt.style.use('ggplot')
 
 mothercells_file_path = 'data/mothercells.p'
 daughtercells_data_path = 'data/daughtercells.p'
@@ -65,18 +65,17 @@ def select_model_timecourses(model, time_course_selections):
 
 def simulate_model(model, end_time, steps=100):
     simulation_result = model.simulate(0, end_time, steps)
-    return simulation_result
+    return simulation_to_dict(simulation_result)
 
-def compute_sqd_distance(simulation_result, data):
+def compute_sqd_distance(simulation_result_dict, data):
     dist = 0.
-    for col_name in simulation_result.colnames:
-        if col_name == 'time':
+    for variable in simulation_result_dict:
+        if variable == 'time':
             continue
-        dist += np.nansum((data[col_name] - simulation_result[col_name])**2)
+        dist += np.nansum((data[variable] - simulation_result_dict[variable])**2)
     return dist
 
 def truncate_data(data):
-
     """ truncate data in such a way that there are no leading or trailing nan values left"""
     pos_min = 0
     pos_max = np.inf
@@ -98,23 +97,24 @@ def time_vector_to_steps_and_stop(time_vector):
     steps = len(time_vector)
     return steps, stop
 
-def simulate_model_for_parameter_values(parameter_values, model, parameter_ids, time_vector):
+def simulate_model_for_parameter_values(parameter_values, model, parameter_ids, time_vector, additional_model_parameters={}):
     param_dict = dict(zip(parameter_ids, parameter_values))
     model.reset()
+    model = set_model_parameters(model, additional_model_parameters)
     model = set_model_parameters(model, param_dict)
     steps, end_time = time_vector_to_steps_and_stop(time_vector)
-    simulation_result = simulate_model(model, end_time, steps)
-    return simulation_result
+    simulation_result_dict = simulate_model(model, end_time, steps)
+    return simulation_result_dict
 
-def compute_objective_function(parameter_values, model, parameter_ids, data):
-    simulation_result = simulate_model_for_parameter_values(parameter_values, model, parameter_ids, data['time'])
-    return compute_sqd_distance(simulation_result, data)
+def compute_objective_function(parameter_values, model, parameter_ids, data, additional_model_parameters):
+    simulation_result_dict = simulate_model_for_parameter_values(parameter_values, model, parameter_ids, data['time'], additional_model_parameters)
+    return compute_sqd_distance(simulation_result_dict, data)
 
-def fit_model_to_data(model, data, parameters_to_fit, bounds={}):
+def fit_model_to_data(model, data, parameters_to_fit, bounds={}, additional_model_parameters={}):
     reference_params = {p_id: model[p_id] for p_id in parameters_to_fit}
     initial_params = [reference_params[p_id] for p_id in parameters_to_fit]
     model = select_model_timecourses(model, data.keys())
-    additional_arguments = (model, parameters_to_fit, data)
+    additional_arguments = (model, parameters_to_fit, data, additional_model_parameters)
     if bounds != {}:
         bounds_list = [bounds[p_id] for p_id in parameters_to_fit]
     else:
@@ -126,11 +126,28 @@ def fit_model_to_data(model, data, parameters_to_fit, bounds={}):
                         initial_params, 
                         minimizer_kwargs=minimizer_kwargs)
 
+def get_initial_values_from_data(data):
+    initial_values = {}
+    for variable in data:
+        if variable == 'time':
+            continue
+        initial_values[variable] = data[variable][0]
+    return initial_values
 
-def plot_fitting_result_and_data(model, fitting_result, data, parameter_ids, subplot=True):
+def get_initial_volume_osmotic_from_data(model, data):
+    initial_values = get_initial_values_from_data(data)
+    assert 'V_tot_fl' in initial_values
+    volume_osmotic = initial_values['V_tot_fl'] - model['V_b']
+    parameters = {'V_os': volume_osmotic}
+    return parameters
+
+def plot_fitting_result_and_data(model, fitting_result, data, parameter_ids, subplot=True, additional_model_parameters={}):
     parameter_values = fitting_result.x
-    simulation_result = simulate_model_for_parameter_values(parameter_values, model, parameter_ids, data['time'])
-    simulation_result_dict = simulation_to_dict(simulation_result)
+    simulation_result_dict = simulate_model_for_parameter_values(parameter_values, 
+                                                            model, 
+                                                            parameter_ids, 
+                                                            data['time'], 
+                                                            additional_model_parameters=additional_model_parameters)
 
     plot((simulation_result_dict, data))
     
@@ -147,8 +164,12 @@ if __name__ == '__main__':
     simulation_result = simulate_model(model, end_time=7200)
 
 
-    time_starting_zero = np.array(time_data) + abs(min(time_data))
-    data = {'time': time_starting_zero, 'V_tot_fl': mothercells_data[0, :]}
+    data = {'time': np.array(time_data), 'V_tot_fl': mothercells_data[0, :]}
+    data = truncate_data(data)
+    data['time'] = data['time'] + abs(min(data['time']))
     parameter_ids = ['k_nutrient']
-    fitting_result = fit_model_to_data(model, data, parameter_ids)
-    plot_fitting_result_and_data(model, fitting_result, data, parameter_ids, subplot=True)
+    additional_model_parameters = get_initial_volume_osmotic_from_data(model, data)
+    print additional_model_parameters
+    fitting_result = fit_model_to_data(model, data, parameter_ids, additional_model_parameters=additional_model_parameters)
+    plot_fitting_result_and_data(model, fitting_result, data, parameter_ids, subplot=True, additional_model_parameters=additional_model_parameters)
+    print model['V_os']

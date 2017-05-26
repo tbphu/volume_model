@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from tools import OptimizationBounds
+import cma
 import pickle
 import matplotlib.pyplot as plt
 import numpy as np
@@ -108,12 +109,41 @@ def simulate_model_for_parameter_values(parameter_values, model, parameter_ids, 
     return simulation_result_dict
 
 def compute_objective_function(parameter_values, model, parameter_ids, data, additional_model_parameters):
-    #print parameter_values
+    print parameter_values
     simulation_result_dict = simulate_model_for_parameter_values(parameter_values, model, parameter_ids, data['time'], additional_model_parameters)
     sqd = compute_sqd_distance(simulation_result_dict, data)
     return compute_sqd_distance(simulation_result_dict, data)
 
-def fit_model_to_data(model, data, parameters_to_fit, bounds={}, additional_model_parameters={}):
+def fit_basin(initial_params, additional_arguments, bounds_min, bounds_max, basin_iterations=1e3, basin_stepsize=1e-15):
+    bounds_basinhopping = OptimizationBounds(xmin=bounds_min, xmax=bounds_max)
+    bounds_lbfgsb = zip(bounds_min, bounds_max)
+    minimizer_kwargs ={'args': additional_arguments,
+                       'method': 'L-BFGS-B',
+                       'bounds': bounds_lbfgsb }
+    result = basinhopping(compute_objective_function, 
+                        initial_params, 
+                        niter=int(basin_iterations),
+                        stepsize=basin_stepsize,
+                        minimizer_kwargs=minimizer_kwargs,
+                        accept_test=bounds_basinhopping)
+    return result.x
+
+def fit_cmaes(initial_params, additional_arguments, bounds_min, bounds_max, sigma0=1e-15):
+    options = {'bounds': (bounds_min, bounds_max)}
+    result = cma.fmin(compute_objective_function, 
+                      x0=initial_params,
+                      sigma0=sigma0,
+                      options=options,
+                      args=additional_arguments)
+    return result[0]
+
+
+def fit_model_to_data(model,
+                      data,
+                      parameters_to_fit,
+                      optimizer,
+                      bounds={},
+                      additional_model_parameters={}):
     reference_params = {p_id: model[p_id] for p_id in parameters_to_fit}
     initial_params = [reference_params[p_id] for p_id in parameters_to_fit]
     model = select_model_timecourses(model, data.keys())
@@ -125,14 +155,10 @@ def fit_model_to_data(model, data, parameters_to_fit, bounds={}, additional_mode
     else:
         xmin = [0.] * len(initial_params)
         xmax = 100. * np.array(initial_params)
-    opt_bounds = OptimizationBounds(xmin=xmin, xmax=xmax)
-    minimizer_kwargs ={'args': additional_arguments,
-                        'method': 'L-BFGS-B',
-                        'bounds': zip(xmin, xmax) }
-    return basinhopping(compute_objective_function, 
-                        initial_params, 
-                        minimizer_kwargs=minimizer_kwargs,
-                        accept_test=opt_bounds)
+    if optimizer == 'basin':
+        fit_basin(initial_params, additional_arguments, xmin, xmax)
+    elif optimizer == 'cmaes':
+        return fit_cmaes(initial_params, additional_arguments, xmin, xmax)
 
 def get_initial_values_from_data(data):
     initial_values = {}
@@ -149,9 +175,8 @@ def get_initial_volume_osmotic_from_data(model, data):
     parameters = {'V_os': volume_osmotic}
     return parameters
 
-def plot_fitting_result_and_data(model, fitting_result, data, parameter_ids, subplot=True, additional_model_parameters={}):
-    parameter_values = fitting_result.x
-    simulation_result_dict = simulate_model_for_parameter_values(parameter_values, 
+def plot_fitting_result_and_data(model, fitted_parameters, data, parameter_ids, subplot=True, additional_model_parameters={}):
+    simulation_result_dict = simulate_model_for_parameter_values(fitted_parameters, 
                                                             model, 
                                                             parameter_ids, 
                                                             data['time'], 
@@ -172,11 +197,11 @@ if __name__ == '__main__':
     simulation_result = simulate_model(model, end_time=7200)
 
 
-    data = {'time': np.array(time_data), 'V_tot_fl': mothercells_data[0, :]}
+    data = {'time': np.array(time_data), 'V_tot_fl': mothercells_data[1, :]}
     data = truncate_data(data)
     data['time'] = data['time'] + abs(min(data['time']))
-    parameter_ids = ['k_nutrient']
+    parameter_ids = ['k_nutrient', 'k_deg']
     additional_model_parameters = get_initial_volume_osmotic_from_data(model, data)
     print additional_model_parameters
-    fitting_result = fit_model_to_data(model, data, parameter_ids, additional_model_parameters=additional_model_parameters)
-    plot_fitting_result_and_data(model, fitting_result, data, parameter_ids, subplot=True, additional_model_parameters=additional_model_parameters)
+    fitted_parameters = fit_model_to_data(model, data, parameter_ids, 'basin', additional_model_parameters=additional_model_parameters)
+    plot_fitting_result_and_data(model, fitted_parameters, data, parameter_ids, subplot=True, additional_model_parameters=additional_model_parameters)

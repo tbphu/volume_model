@@ -108,11 +108,9 @@ def simulate_model_for_parameter_values(parameter_values, model, parameter_ids, 
     return simulation_result_dict
 
 def compute_objective_function(parameter_values, model, parameter_ids, data, additional_model_parameters):
+    #print parameter_values
     simulation_result_dict = simulate_model_for_parameter_values(parameter_values, model, parameter_ids, data['time'], additional_model_parameters)
     sqd = compute_sqd_distance(simulation_result_dict, data)
-    print parameter_values
-    print sqd
-    print
     return compute_sqd_distance(simulation_result_dict, data)
 
 def fit_model_to_data(model, data, parameters_to_fit, bounds={}, additional_model_parameters={}):
@@ -127,13 +125,14 @@ def fit_model_to_data(model, data, parameters_to_fit, bounds={}, additional_mode
     else:
         xmin = [0.] * len(initial_params)
         xmax = 100. * np.array(initial_params)
-    bounds = OptimizationBounds(xmin=xmin, xmax=xmax)
+    opt_bounds = OptimizationBounds(xmin=xmin, xmax=xmax)
     minimizer_kwargs ={'args': additional_arguments,
-                        'method': 'L-BFGS-B' }
+                        'method': 'L-BFGS-B',
+                        'bounds': zip(xmin, xmax) }
     return basinhopping(compute_objective_function, 
                         initial_params, 
                         minimizer_kwargs=minimizer_kwargs,
-                        accept_test=bounds)
+                        accept_test=opt_bounds)
 
 def get_initial_values_from_data(data):
     initial_values = {}

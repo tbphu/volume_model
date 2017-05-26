@@ -116,7 +116,7 @@ def get_initial_volume_osmotic_from_data(model, data):
 
 def simulate_model_for_parameter_values(parameter_values, model, parameter_ids, time_vector, additional_model_parameters={}):
     param_dict = dict(zip(parameter_ids, parameter_values))
-    model.reset()
+    model.resetAll()
     model = set_model_parameters(model, additional_model_parameters)
     model = set_model_parameters(model, param_dict)
     steps, end_time = time_vector_to_steps_and_stop(time_vector)
@@ -143,7 +143,7 @@ def fit_basin(initial_params, additional_arguments, bounds_min, bounds_max, basi
                         accept_test=bounds_basinhopping)
     return result.x
 
-def fit_cmaes(initial_params, additional_arguments, bounds_min, bounds_max, sigma0=4e-16, tolx=1e-17):
+def fit_cmaes(initial_params, additional_arguments, bounds_min, bounds_max, sigma0=4e-17, tolx=1e-17):
     options = cma.CMAOptions()
     #options.set('tolfun', 1e-14)
     options['tolx'] = tolx
@@ -162,6 +162,7 @@ def fit_model_to_data(model,
                       optimizer,
                       bounds={},
                       additional_model_parameters={}):
+    model.resetAll()
     reference_params = {p_id: model[p_id] for p_id in parameters_to_fit}
     initial_params = [reference_params[p_id] for p_id in parameters_to_fit]
     model = select_model_timecourses(model, data.keys())
@@ -184,15 +185,46 @@ def plot_fitting_result_and_data(model,
                                  fitted_parameters, 
                                  data, 
                                  parameter_ids, 
+                                 additional_model_parameters={},
                                  subplot=True, 
-                                 additional_model_parameters={}):
+                                 show=True):
     simulation_result_dict = simulate_model_for_parameter_values(fitted_parameters, 
                                                             model, 
                                                             parameter_ids, 
                                                             data['time'], 
                                                             additional_model_parameters=additional_model_parameters)
-    plot((simulation_result_dict, data))
+    plot((simulation_result_dict, data), subplot=subplot, show=show)
     
+
+def fit_model_to_all_cells(model, 
+                           mothercells_data,
+                           daughtercells_data,
+                           time_data,
+                           parameters_to_fit):
+    fitting_results = []
+    rows_and_cols = np.ceil(np.sqrt(len(mothercells_data)))
+    for mother_pos in range(len(mothercells_data)):
+        data = {'time': np.array(time_data), 'V_tot_fl': mothercells_data[mother_pos, :]}
+        data = truncate_data(data)
+        data['time'] = data['time'] + abs(min(data['time']))
+        additional_model_parameters = get_initial_volume_osmotic_from_data(model, data)
+        fitted_parameters = fit_model_to_data(model, 
+                                              data, 
+                                              parameters_to_fit, 
+                                              'cmaes', 
+                                              additional_model_parameters=additional_model_parameters)
+        fitting_results.append(fitted_parameters)
+        plt.subplot(rows_and_cols, rows_and_cols, mother_pos + 1)
+        plot_fitting_result_and_data(model,
+                                     fitted_parameters,
+                                     data,
+                                     parameters_to_fit,
+                                     additional_model_parameters=additional_model_parameters,
+                                     subplot=False,
+                                     show=False)
+    plt.show()
+        
+    return fitting_results
 
 
 if __name__ == '__main__':
@@ -203,14 +235,10 @@ if __name__ == '__main__':
     model = load_model('volume_reference.txt')
     #model = set_model_parameters(model, {'k_nutrient': 0})
     #model = select_model_timecourses(['V_tot_fl'])
-    simulation_result = simulate_model(model, end_time=7200)
-
-
-    data = {'time': np.array(time_data), 'V_tot_fl': mothercells_data[1, :]}
-    data = truncate_data(data)
-    data['time'] = data['time'] + abs(min(data['time']))
-    parameter_ids = ['k_nutrient', 'k_deg']
-    additional_model_parameters = get_initial_volume_osmotic_from_data(model, data)
-    fitted_parameters = fit_model_to_data(model, data, parameter_ids, 'cmaes', additional_model_parameters=additional_model_parameters)
-    print fitted_parameters
-    plot_fitting_result_and_data(model, fitted_parameters, data, parameter_ids, subplot=True, additional_model_parameters=additional_model_parameters)
+    #simulation_result = simulate_model(model, end_time=7200)    
+    
+    
+    parameters_to_fit = ['k_nutrient', 'k_deg']
+    
+    fit_model_to_all_cells(model, mothercells_data, daughtercells_data, time_data, parameters_to_fit)
+    #plot_fitting_result_and_data(model, fitted_parameters, data, parameter_ids, subplot=True, additional_model_parameters=additional_model_parameters)

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from tools import OptimizationBounds
 import pickle
 import matplotlib.pyplot as plt
 import numpy as np
@@ -108,6 +109,10 @@ def simulate_model_for_parameter_values(parameter_values, model, parameter_ids, 
 
 def compute_objective_function(parameter_values, model, parameter_ids, data, additional_model_parameters):
     simulation_result_dict = simulate_model_for_parameter_values(parameter_values, model, parameter_ids, data['time'], additional_model_parameters)
+    sqd = compute_sqd_distance(simulation_result_dict, data)
+    print parameter_values
+    print sqd
+    print
     return compute_sqd_distance(simulation_result_dict, data)
 
 def fit_model_to_data(model, data, parameters_to_fit, bounds={}, additional_model_parameters={}):
@@ -116,15 +121,19 @@ def fit_model_to_data(model, data, parameters_to_fit, bounds={}, additional_mode
     model = select_model_timecourses(model, data.keys())
     additional_arguments = (model, parameters_to_fit, data, additional_model_parameters)
     if bounds != {}:
-        bounds_list = [bounds[p_id] for p_id in parameters_to_fit]
+        xmin = [bounds[p_id][0] for p_id in parameters_to_fit]
+        xmax = [bounds[p_id][1] for p_id in parameters_to_fit]
+        
     else:
-        bounds_list = [(0, 100*p_init) for p_init in initial_params]
+        xmin = [0.] * len(initial_params)
+        xmax = 100. * np.array(initial_params)
+    bounds = OptimizationBounds(xmin=xmin, xmax=xmax)
     minimizer_kwargs ={'args': additional_arguments,
-                        'bounds': bounds_list,
                         'method': 'L-BFGS-B' }
     return basinhopping(compute_objective_function, 
                         initial_params, 
-                        minimizer_kwargs=minimizer_kwargs)
+                        minimizer_kwargs=minimizer_kwargs,
+                        accept_test=bounds)
 
 def get_initial_values_from_data(data):
     initial_values = {}
@@ -172,4 +181,3 @@ if __name__ == '__main__':
     print additional_model_parameters
     fitting_result = fit_model_to_data(model, data, parameter_ids, additional_model_parameters=additional_model_parameters)
     plot_fitting_result_and_data(model, fitting_result, data, parameter_ids, subplot=True, additional_model_parameters=additional_model_parameters)
-    print model['V_os']

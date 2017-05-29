@@ -1,10 +1,15 @@
 #!/usr/bin/env python
 
 import model_data
+import fit_data
+import tools
+import math
 import tellurium as te
 import numpy as np
 import matplotlib.pyplot as plt
 plt.style.use('ggplot')
+
+math_functions = {'pi': math.pi}
 
 
 def plot(data_tuple, subplot=True, show=True, legend=True):
@@ -42,11 +47,26 @@ def simulate_model(model, end_time, steps=100):
     simulation_result = model.simulate(0, end_time, steps)
     return simulation_to_dict(simulation_result)
 
-def simulate_model_for_parameter_values(parameter_values, model, parameter_ids, time_vector, additional_model_parameters={}):
+def evaluate_initial_assignments(model, initial_assignments):
+    param_dict = model_data.get_model_parameters_as_dict(model)
+    for variable in initial_assignments:
+        model[variable] = eval(initial_assignments[variable], param_dict, math_functions)
+    return model
+
+def time_vector_to_steps_and_stop(time_vector):
+    assert time_vector[0] == 0
+    stop = time_vector[-1]
+    steps = len(time_vector)
+    return steps, stop
+
+def simulate_model_for_parameter_values(parameter_values, model, parameter_ids, time_vector, additional_model_parameters={}, initial_assignments={}):
     param_dict = dict(zip(parameter_ids, parameter_values))
     model.resetAll()
+    if initial_assignments == {}:
+        initial_assignments = tools.get_initial_assignments_dict(model)
     model = model_data.set_model_parameters(model, additional_model_parameters)
     model = model_data.set_model_parameters(model, param_dict)
+    model = evaluate_initial_assignments(model, initial_assignments)
     steps, end_time = time_vector_to_steps_and_stop(time_vector)
     simulation_result_dict = simulate_model(model, end_time, steps)
     return simulation_result_dict

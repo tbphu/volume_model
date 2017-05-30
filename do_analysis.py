@@ -9,8 +9,6 @@ import tools
 model = simulate.load_model('volume_reference.txt')
 
 
-ia = tools.get_initial_assignments_dict(model)
-fit_data.evaluate_initial_assignments(model, ia)
 #df =  model_data.get_model_parameters_as_dataframe(model)
 #df.to_csv('used_model_parameters.csv')
 
@@ -24,6 +22,6 @@ fit_data.evaluate_initial_assignments(model, ia)
 
 #run simu
 
-#simulation_result = simulate.simulate_model(model, end_time=7200)
-#simulate.plot((simulation_result,), legend=True)
+simulation_result = simulate.simulate_model(model, end_time=7200)
+simulate.plot((simulation_result,), legend=True)
 

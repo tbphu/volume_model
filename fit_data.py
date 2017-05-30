@@ -48,7 +48,7 @@ def fit_basin(initial_params, additional_arguments, bounds_min, bounds_max, basi
                         accept_test=bounds_basinhopping)
     return result.x
 
-def fit_cmaes(initial_params, additional_arguments, bounds_min, bounds_max, sigma0=4e-16, tolx=1e-18):
+def fit_cmaes(initial_params, additional_arguments, bounds_min, bounds_max, sigma0=4e-17, tolx=1e-19):
     options = cma.CMAOptions()
     #options.set('tolfun', 1e-14)
     options['tolx'] = tolx
@@ -70,10 +70,6 @@ def fit_model_to_data(model,
     model.resetAll()
     reference_params = {p_id: model[p_id] for p_id in parameters_to_fit}
     initial_params = [reference_params[p_id] for p_id in parameters_to_fit]
-    print 
-    print "initial"
-    print initial_params
-    print
     model = simulate.select_model_timecourses(model, data.keys())
     additional_arguments = (model, parameters_to_fit, data, additional_model_parameters)
     if bounds != {}:
@@ -123,9 +119,6 @@ def fit_model_to_all_cells(model,
                                               additional_model_parameters=additional_model_parameters)
         fitting_results.append(fitted_parameters)
         plt.subplot(rows_and_cols, rows_and_cols, mother_pos + 1)
-        print 
-        print fitted_parameters
-        print 
         plot_fitting_result_and_data(model,
                                      fitted_parameters,
                                      data,
@@ -153,5 +146,5 @@ if __name__ == '__main__':
     
     parameters_to_fit = ['k_nutrient', 'k_deg']
     
-    fit_model_to_all_cells(model, mothercells_data, daughtercells_data, time_data, parameters_to_fit)
-    plot_fitting_result_and_data(model, fitted_parameters, data, parameter_ids, subplot=True, additional_model_parameters=additional_model_parameters)
+    fitted_parameters = fit_model_to_all_cells(model, mothercells_data, daughtercells_data, time_data, parameters_to_fit)
+    #plot_fitting_result_and_data(model, fitted_parameters, mothercells_data, parameters_to_fit, subplot=True)

@@ -51,6 +51,7 @@ def evaluate_initial_assignments(model, initial_assignments):
     param_dict = model_data.get_model_parameters_as_dict(model)
     for variable in initial_assignments:
         model[variable] = eval(initial_assignments[variable], param_dict, math_functions)
+
     return model
 
 def time_vector_to_steps_and_stop(time_vector):

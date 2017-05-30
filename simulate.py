@@ -71,3 +71,13 @@ def simulate_model_for_parameter_values(parameter_values, model, parameter_ids, 
     steps, end_time = time_vector_to_steps_and_stop(time_vector)
     simulation_result_dict = simulate_model(model, end_time, steps)
     return simulation_result_dict
+
+
+if __name__ == '__main__':
+    import sys
+    model = load_model(sys.argv[1])
+    #model = select_model_timecourses(model, ['bud_V_b'])
+    simulation_result = simulate_model(model, end_time=7200)
+    plot((simulation_result,), legend=True)
+
+

@@ -37,7 +37,8 @@ model volume_rheology
   
   // water flow over membrane
   Lp = 1.19e-6; // um/s/Pa #Klipp 2005
-  dV_os := -Lp * G * (pi_t + pi_e - pi_i); // water influx over the membrane -J_w
+  dV_exchange = 0;
+  dV_os := -Lp * G * (pi_t + pi_e - pi_i) + dV_exchange; // water influx over the membrane -J_w
   V_os'  = dV_os;
 
   // growth of non osmotic volume
@@ -46,7 +47,7 @@ model volume_rheology
   dV_tot := dV_os + dV_b;
   
   // plastic expansion rate 
-  pi_t0 = 0.202e-6
+  pi_t0 = 0.2e-6
   pi_t = pi_t0*1e12; //0.200e6; // Pa
   pi_tc_0 = 2e5;
   d = 0.115; // um Goldenbogen, Giese 2016
@@ -56,7 +57,7 @@ model volume_rheology
   V_ref' = phi*radius/2/d * MAX(pi_t - pi_tc, 0)*V_ref
 
   // turgor dynamics
-  modulus_adjustment = 3.0; // TODO: check this !!!
+  modulus_adjustment = 1//3.0; // TODO: check this !!!
   E = modulus_adjustment*2.58e6; // Pa Goldenbogen, Giese 2016    
   pi_t'  = E*2*d/radius * (dV_tot/V_ref) - E*phi* MAX(pi_t - pi_tc, 0) - pi_t/V_tot_fl * (dV_tot); 
   

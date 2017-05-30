@@ -5,8 +5,28 @@ model volume_mother_and_bud
   mother: volume_rheology();  
   bud: volume_rheology();
 
-  k_diff_c = 1. * 1e-15;
-  k_diff_v = 1. * 1e-15;
+  budding_start = 3600;
+
+  // nutrient uptake
+  k_nutrient_after_budding = 2.5e-16;
+  mother.k_nutrient = k_nutrient_after_budding;
+  k_nutrient_in_the_bud = 0;
+  bud.k_nutrient := k_nutrient_in_the_bud;
+  at time > budding_start: k_nutrient_in_the_bud = k_nutrient_after_budding;
+
+  // nutrient degradation
+  k_deg_after_budding = 3e-16;
+  mother.k_deg = k_deg_after_budding;
+  k_deg_in_the_bud = 0;
+  bud.k_deg := k_deg_in_the_bud;
+  at time > budding_start: k_deg_in_the_bud = k_deg_after_budding;
+
+  bud.V_os = 1 // 0.1;
+  bud.V_b = 3;
+  bud.E = 3.5e6 // MPa calulate new!!
+
+  
+
   k_nutrient = 0.05;
   q0 = 0.85;
   q = q0;
@@ -18,25 +38,39 @@ model volume_mother_and_bud
   // Uncomment the following 4 lines to enable Separation and Partitioning:
   // t_seperation = 2400
   // k_diff_c := 1 - (1.0/(1.0 + exp(-0.05*(time - t_seperation))));
-  // k_diff_v := 1 - (1.0/(1.0 + exp(-0.05*(time - t_seperation))));
+  // mother_bud_water_perm := 1 - (1.0/(1.0 + exp(-0.05*(time - t_seperation))));
   // d_Vb := 0.003*(1 - (1.0/(1.0 + exp(-0.05*(time - t_seperation)))));
   /////////////////////////////////////////////////////////////////////////////
 
 
-  //=> mother.c_i; k_nutrient * mother.G;
-  //=> bud.c_i; k_nutrient * bud.G;
-  mother.c_i -> bud.c_i; k_diff_c * (mother.c_i - bud.c_i);   
 
-  mother.V_os' = mother.dV_os - k_diff_v * (mother.pi_t - bud.pi_t);  
-  bud.V_os' = bud.dV_os + k_diff_v * (mother.pi_t - bud.pi_t);
+  // solute dffusion between mother and bud
+  //c_i_diffusion_coeff = 0;
+  //c_i_diffusion_coeff_after_budding = 1e-15;
+  //mother.c_i -> bud.c_i; c_i_diffusion_coeff * (mother.c_i - bud.c_i);   
+
+
+  // water exchange between mother and bud
+  //mother_bud_water_perm = 0;
+  //mother_bud_water_perm_after_budding = 1. * 1e-15;
+  //mother.dV_exchange :=  -mother_bud_water_perm * (mother.pi_t - bud.pi_t);
+  //bud.dV_exchange :=  mother_bud_water_perm * (mother.pi_t - bud.pi_t);
+
+
   
   //bud.V_os = 1.;
   //bud.V_b = 0.5;
 
-  bud.V_b' = d_Vb; //.003;
-  mother.V_b' = -d_Vb; //-0.003;
+  //bud.V_b' = d_Vb; //.003;
+  //mother.V_b' = -d_Vb; //-0.003;
 
-  bud.E := mother.E * q;
+  //bud.E := mother.E * q;
+
+  
+  
+  //at time > budding_start: mother_bud_water_perm = mother_bud_water_perm_after_budding;
+  //at time > budding_start: c_i_diffusion_coeff = c_i_diffusion_coeff_after_budding;
+
 
 
 end

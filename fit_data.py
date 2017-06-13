@@ -48,7 +48,7 @@ def fit_basin(initial_params, additional_arguments, bounds_min, bounds_max, basi
                         accept_test=bounds_basinhopping)
     return result.x
 
-def fit_cmaes(initial_params, additional_arguments, bounds_min, bounds_max, sigma0=4e-17, tolx=1e-19):
+def fit_cmaes(initial_params, additional_arguments, bounds_min, bounds_max, sigma0=4e-13, tolx=1e-25):
     options = cma.CMAOptions()
     #options.set('tolfun', 1e-14)
     options['tolx'] = tolx
@@ -77,7 +77,7 @@ def fit_model_to_data(model,
         xmax = [bounds[p_id][1] for p_id in parameters_to_fit]        
     else:
         xmin = [0.] * len(initial_params)
-        xmax = 100. * np.array(initial_params)
+        xmax = 100000. * np.array(initial_params)
     if optimizer == 'basin':
         return fit_basin(initial_params, additional_arguments, xmin, xmax)
     elif optimizer == 'cmaes':
@@ -142,9 +142,25 @@ if __name__ == '__main__':
     #simulation_result = simulate.simulate_model(model, end_time=7200)
     #simulate.plot((simulation_result,), legend=True)
 
+
+
+
     
     
     parameters_to_fit = ['k_nutrient', 'k_deg']
     
-    fitted_parameters = fit_model_to_all_cells(model, mothercells_data, daughtercells_data, time_data, parameters_to_fit)
+    data = {'time': np.array(time_data), 'V_tot_fl': mothercells_data[0, :]}
+    data = model_data.truncate_data(data)
+    data['time'] = data['time'] + abs(min(data['time']))
+
+    additional_model_parameters = get_initial_volume_osmotic_from_data(model, data)
+    print additional_model_parameters
+    fitted_parameters = fit_model_to_data(model, 
+                                          data, 
+                                          parameters_to_fit,   
+                                          'cmaes', 
+                                          additional_model_parameters=additional_model_parameters)
+    plot_fitting_result_and_data(model, fitted_parameters, data, parameters_to_fit, subplot=True, additional_model_parameters=additional_model_parameters)
+
+    #fitted_parameters = fit_model_to_all_cells(model, mothercells_data, daughtercells_data, time_data, parameters_to_fit)
     #plot_fitting_result_and_data(model, fitted_parameters, mothercells_data, parameters_to_fit, subplot=True)

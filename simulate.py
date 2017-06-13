@@ -77,7 +77,7 @@ if __name__ == '__main__':
     import sys
     model = load_model(sys.argv[1])
     #model = select_model_timecourses(model, ['bud_V_b'])
-    simulation_result = simulate_model(model, end_time=7200)
+    simulation_result = simulate_model(model, end_time=14400)
     plot((simulation_result,), legend=True)
 
 

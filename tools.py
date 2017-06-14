@@ -14,10 +14,10 @@ class OptimizationBounds(object):
 
 
 def get_initial_assignments_dict(model):
-	sbml = model.getSBML()
-	sbml_document = libsbml.readSBMLFromString(sbml)
-	sbml_model = sbml_document.getModel()
-	assignments = {}
-	for ia in sbml_model.getListOfInitialAssignments():
-		assignments[ia.getId()] = libsbml.formulaToString(ia.getMath())
-	return assignments
+    sbml = model.getSBML()
+    sbml_document = libsbml.readSBMLFromString(sbml)
+    sbml_model = sbml_document.getModel()
+    assignments = {}
+    for ia in sbml_model.getListOfInitialAssignments():
+        assignments[ia.getId()] = libsbml.formulaToString(ia.getMath())
+    return assignments

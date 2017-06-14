@@ -28,6 +28,8 @@ model volume_rheology
   species c_e in extra = 240; // mM hat Bjoern gemessen (SD-F)
   species c_i in V_tot_liter = 319.17; // mM
 
+  //c_i = 3.1917e2 * V_tot_liter;
+
   // internal and external osmotic
   pi_i    := c_i * R * T ;
   pi_e    := c_e * R * T ;
@@ -61,8 +63,8 @@ model volume_rheology
   R_ref' = dR_ref  
   
   // nutrient uptake and consumptions
-  k_nutrient = 3.5e-16; // mM/s/um^2   
-  k_deg = 3.8e-16;
+  k_nutrient = 1.03290153e-14 //3.5e-16; // mM/s/um^2   
+  k_deg = 1.19204038e-14 //3.8e-16;
   k_transport = 0 
   
   => c_i; k_nutrient * G;

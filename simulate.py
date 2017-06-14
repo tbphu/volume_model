@@ -65,9 +65,9 @@ def simulate_model_for_parameter_values(parameter_values, model, parameter_ids, 
     model.resetAll()
     if initial_assignments == {}:
         initial_assignments = tools.get_initial_assignments_dict(model)
-    model = model_data.set_model_parameters(model, additional_model_parameters)
     model = model_data.set_model_parameters(model, param_dict)
     model = evaluate_initial_assignments(model, initial_assignments)
+    model = model_data.set_model_parameters(model, additional_model_parameters)
     steps, end_time = time_vector_to_steps_and_stop(time_vector)
     simulation_result_dict = simulate_model(model, end_time, steps)
     return simulation_result_dict
@@ -76,15 +76,22 @@ def simulate_model_for_parameter_values(parameter_values, model, parameter_ids, 
 if __name__ == '__main__':
     import sys
     model = load_model(sys.argv[1])
+    #sdf
     #model = select_model_timecourses(model, ['bud_V_b'])
 
     #p_values = [ 4.71194415e-17, 1.84782585e-15, 1.00000000e-01]
-    p_values = [ 4.71194415e-17, 3.84782585e-16, 1.00000000e-01]
+    #p_values = [ 4.71194415e-17, 3.84782585e-16, 1.00000000e-01]
+    #parameters_to_fit = ['k_nutrient', 'k_deg', 'r_os']
+    #parameters_to_fit = ['r_os']
+
+    p_values = [  6.88059247e-15,   7.72725819e-15,  2.15751334e+00]
     parameters_to_fit = ['k_nutrient', 'k_deg', 'r_os']
-    simulate_model_for_parameter_values( p_values, model, parameters_to_fit, range(500), )
 
+    #p_values = []
+    #parameters_to_fit = []
 
-    simulation_result = simulate_model(model, end_time=14400)
+    simulation_result = simulate_model_for_parameter_values( p_values, model, parameters_to_fit, range(500) , additional_model_parameters={'[c_i]': 319} )
+    #simulation_result = simulate_model(model, end_time=500)
     plot((simulation_result,), legend=True)
 
 

@@ -77,6 +77,13 @@ if __name__ == '__main__':
     import sys
     model = load_model(sys.argv[1])
     #model = select_model_timecourses(model, ['bud_V_b'])
+
+    #p_values = [ 4.71194415e-17, 1.84782585e-15, 1.00000000e-01]
+    p_values = [ 4.71194415e-17, 3.84782585e-16, 1.00000000e-01]
+    parameters_to_fit = ['k_nutrient', 'k_deg', 'r_os']
+    simulate_model_for_parameter_values( p_values, model, parameters_to_fit, range(500), )
+
+
     simulation_result = simulate_model(model, end_time=14400)
     plot((simulation_result,), legend=True)
 

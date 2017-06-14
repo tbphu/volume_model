@@ -75,7 +75,7 @@ model volume_rheology
   // at time > 7200: k_transport = 2.5e-10
   
   //osmo event
-  at time > 7200: c_e = 1000
+  //at time > 7200: c_e = 1000
     
 
 

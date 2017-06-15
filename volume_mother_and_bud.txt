@@ -7,23 +7,20 @@ model volume_mother_and_bud
 
   budding_start = 3600;
 
+
   bud_start_in_the_bud = 0;
   bud.bud_start := bud_start_in_the_bud;
   at time > budding_start: bud_start_in_the_bud = 1;
 
 
-  //bud.r_os = 0.01
-  //bud.r_b = 0.01;
-  //bud.E = 3.5e6 // MPa calulate new!!
+  // solute dffusion between mother and bud
+  c_i_diffusion_coeff = 1e-13;
+  mother.c_i -> bud.c_i; c_i_diffusion_coeff * (mother.c_i - bud.c_i) * bud_start_in_the_bud;   
 
-  
-
-  //k_nutrient = 0.05;
-  //q0 = 0.85;
-  //q = q0;
-  //d_Vb := 0;
-  //division_time = 7200; // s
-
+  // water exchange between mother and bud
+  mother_bud_water_perm = 1. * 1e-15;
+  mother.dV_exchange := - mother_bud_water_perm * (mother.pi_t - bud.pi_t) * bud_start_in_the_bud;
+  bud.dV_exchange :=  mother_bud_water_perm * (mother.pi_t - bud.pi_t) * bud_start_in_the_bud;
 
   ////// Seperation and Partitioning of macromolecules ########################
   // Uncomment the following 4 lines to enable Separation and Partitioning:
@@ -32,36 +29,5 @@ model volume_mother_and_bud
   // mother_bud_water_perm := 1 - (1.0/(1.0 + exp(-0.05*(time - t_seperation))));
   // d_Vb := 0.003*(1 - (1.0/(1.0 + exp(-0.05*(time - t_seperation)))));
   /////////////////////////////////////////////////////////////////////////////
-
-
-
-  // solute dffusion between mother and bud
-  //c_i_diffusion_coeff = 0;
-  //c_i_diffusion_coeff_after_budding = 1e-15;
-  //mother.c_i -> bud.c_i; c_i_diffusion_coeff * (mother.c_i - bud.c_i);   
-
-
-  // water exchange between mother and bud
-  //mother_bud_water_perm = 0;
-  //mother_bud_water_perm_after_budding = 1. * 1e-15;
-  //mother.dV_exchange :=  -mother_bud_water_perm * (mother.pi_t - bud.pi_t);
-  //bud.dV_exchange :=  mother_bud_water_perm * (mother.pi_t - bud.pi_t);
-
-
-  
-  //bud.V_os = 1.;
-  //bud.V_b = 0.5;
-
-  //bud.V_b' = d_Vb; //.003;
-  //mother.V_b' = -d_Vb; //-0.003;
-
-  //bud.E := mother.E * q;
-
-  
-  
-  //at time > budding_start: mother_bud_water_perm = mother_bud_water_perm_after_budding;
-  //at time > budding_start: c_i_diffusion_coeff = c_i_diffusion_coeff_after_budding;
-
-
 
 end

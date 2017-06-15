@@ -11,7 +11,7 @@ model volume_rheology
   // compartments
   compartment V_tot_liter;
   compartment extra = 1;
-  dr_b := 0
+  dr_b := dR_ref * 0.2;
   r_b = 0.3
   r_os = 0.1
   r := r_os + r_b  
@@ -28,6 +28,9 @@ model volume_rheology
   species c_e in extra = 240; // mM hat Bjoern gemessen (SD-F)
   species c_i in V_tot_liter = 319.17; // mM
 
+  // mother and bud connection
+  bud_start = 1;
+
   //c_i = 3.1917e2 * V_tot_liter;
 
   // internal and external osmotic
@@ -43,7 +46,7 @@ model volume_rheology
  
   // water flow over membrane
   Lp = 1.19e-6; // um/s/Pa #Klipp 2005
-  dr_os := - Lp *(pi_t + pi_e - pi_i) 
+  dr_os := - Lp *(pi_t + pi_e - pi_i) * bud_start
   
   // plastic expansion rate 
   pi_t = 0.205e6; // Pa
@@ -59,22 +62,25 @@ model volume_rheology
   E = modulus_adjustment*2.58e6; // Pa Goldenbogen, Giese 2016    
   
   pi_t'  = E * 2 * d / (1-nu) * (dr * R_ref - r * dR_ref) / (R_ref * r^2) - dr / r * pi_t 
-  dR_ref := phi * R_ref * r / (2 * d) * MAX(pi_t - pi_tc, 0) 
+  dR_ref := phi * R_ref * r / (2 * d) * MAX(pi_t - pi_tc, 0) * bud_start;
   R_ref' = dR_ref  
   
   // nutrient uptake and consumptions
-  k_nutrient = 1.03290153e-14 //3.5e-16; // mM/s/um^2   
-  k_deg = 1.19204038e-14 //3.8e-16;
+  //k_nutrient = 1.03290153e-14 //3.5e-16; // mM/s/um^2   
+  //k_deg = 1.19204038e-14 //3.8e-16;
+  k_nutrient = 3.5e-16; // mM/s/um^2   
+  k_deg = 3.8e-16;
+  
   k_transport = 0 
   
-  => c_i; k_nutrient * G;
-  c_i =>; k_deg * V_tot_fl;
-  c_i=> c_e ; k_transport * (c_i - c_e)
+  => c_i; k_nutrient * G * bud_start;
+  c_i =>; k_deg * V_tot_fl * bud_start;
+  c_i=> c_e ; k_transport * (c_i - c_e);
   
    // equalization of ci and ce  at time 7200
 
-  // at time > 7200: k_nutrient = 0
-  // at time > 7200: k_transport = 2.5e-10
+  //at time > 7200: k_nutrient = 0
+  //at time > 7200: k_transport = 2.5e-10
   
   //osmo event
   //at time > 7200: c_e = 1000

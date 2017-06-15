@@ -152,19 +152,19 @@ if __name__ == '__main__':
     parameters_to_fit = ['k_nutrient', 'k_deg', 'r_os']
     #parameters_to_fit = ['k_nutrient', 'k_deg']
     
-    data = {'time': np.array(time_data), 'V_tot_fl': mothercells_data[12, :]}
+    data = {'time': np.array(time_data), 'V_tot_fl': mothercells_data[1, :]}
     data = model_data.truncate_data(data)
     data['time'] = data['time'] + abs(min(data['time']))
 
-    #additional_model_parameters = {} #get_initial_volume_osmotic_from_data(model, data)
+    additional_model_parameters = {'[c_i]': 319} #get_initial_volume_osmotic_from_data(model, data)
     #print additional_model_parameters
     fitted_parameters = fit_model_to_data(model, 
                                           data, 
                                           parameters_to_fit,   
-                                          'cmaes', additional_model_parameters={'[c_i]': 319}) 
+                                          'cmaes', additional_model_parameters=additional_model_parameters) 
                                           #additional_model_parameters=additional_model_parameters)
     print fitted_parameters
-    plot_fitting_result_and_data(model, fitted_parameters, data, parameters_to_fit, subplot=True, additional_model_parameters={'[c_i]': 319}) #, additional_model_parameters=additional_model_parameters)
+    plot_fitting_result_and_data(model, fitted_parameters, data, parameters_to_fit, subplot=True, additional_model_parameters=additional_model_parameters)
 
     #fitted_parameters = fit_model_to_all_cells(model, mothercells_data, daughtercells_data, time_data, parameters_to_fit)
     #plot_fitting_result_and_data(model, fitted_parameters, mothercells_data, parameters_to_fit, subplot=True)

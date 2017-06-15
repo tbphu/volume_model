@@ -1,4 +1,4 @@
-import "volume_reference.txt"
+import "volume_reference_radius.txt"
 
 model volume_mother_and_bud
 
@@ -7,31 +7,22 @@ model volume_mother_and_bud
 
   budding_start = 3600;
 
-  // nutrient uptake
-  k_nutrient_after_budding = 2.5e-16;
-  mother.k_nutrient = k_nutrient_after_budding;
-  k_nutrient_in_the_bud = 0;
-  bud.k_nutrient := k_nutrient_in_the_bud;
-  at time > budding_start: k_nutrient_in_the_bud = k_nutrient_after_budding;
+  bud_start_in_the_bud = 0;
+  bud.bud_start := bud_start_in_the_bud;
+  at time > budding_start: bud_start_in_the_bud = 1;
 
-  // nutrient degradation
-  k_deg_after_budding = 3e-16;
-  mother.k_deg = k_deg_after_budding;
-  k_deg_in_the_bud = 0;
-  bud.k_deg := k_deg_in_the_bud;
-  at time > budding_start: k_deg_in_the_bud = k_deg_after_budding;
 
-  bud.V_os = 1 // 0.1;
-  bud.V_b = 3;
-  bud.E = 3.5e6 // MPa calulate new!!
+  //bud.r_os = 0.01
+  //bud.r_b = 0.01;
+  //bud.E = 3.5e6 // MPa calulate new!!
 
   
 
-  k_nutrient = 0.05;
-  q0 = 0.85;
-  q = q0;
-  d_Vb := 0;
-  division_time = 7200; // s
+  //k_nutrient = 0.05;
+  //q0 = 0.85;
+  //q = q0;
+  //d_Vb := 0;
+  //division_time = 7200; // s
 
 
   ////// Seperation and Partitioning of macromolecules ########################

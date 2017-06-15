@@ -24,6 +24,7 @@ def plot(data_tuple, subplot=True, show=True, legend=True):
                 plt.title(str(variable))
         for data_number, data_dict in enumerate(data_tuple):
             plt.plot(time, data_dict[variable], label=str(variable) + '_%s' % data_number)
+            plt.xlim(-200, time[-1])
     if legend:
         plt.legend()
     if show:
@@ -76,21 +77,18 @@ def simulate_model_for_parameter_values(parameter_values, model, parameter_ids, 
 if __name__ == '__main__':
     import sys
     model = load_model(sys.argv[1])
-    #sdf
-    #model = select_model_timecourses(model, ['bud_V_b'])
-
-    #p_values = [ 4.71194415e-17, 1.84782585e-15, 1.00000000e-01]
-    #p_values = [ 4.71194415e-17, 3.84782585e-16, 1.00000000e-01]
+    
+    #p_values = [  6.88059247e-15,   7.72725819e-15,  2.15751334e+00]
     #parameters_to_fit = ['k_nutrient', 'k_deg', 'r_os']
-    #parameters_to_fit = ['r_os']
+    p_values = []
+    parameters_to_fit = []
 
-    p_values = [  6.88059247e-15,   7.72725819e-15,  2.15751334e+00]
-    parameters_to_fit = ['k_nutrient', 'k_deg', 'r_os']
 
-    #p_values = []
-    #parameters_to_fit = []
 
-    simulation_result = simulate_model_for_parameter_values( p_values, model, parameters_to_fit, range(500) , additional_model_parameters={'[c_i]': 319} )
+    #model = select_model_timecourses()
+    #additional_model_parameters = {'[c_i]': 319} 
+    additional_model_parameters = {}
+    simulation_result = simulate_model_for_parameter_values( p_values, model, parameters_to_fit, range(7200) , additional_model_parameters=additional_model_parameters )
     #simulation_result = simulate_model(model, end_time=500)
     plot((simulation_result,), legend=True)
 

@@ -61,15 +61,18 @@ def time_vector_to_steps_and_stop(time_vector):
     steps = len(time_vector)
     return steps, stop
 
-def simulate_model_for_parameter_values(parameter_values, model, parameter_ids, time_vector, additional_model_parameters={}, initial_assignments={}):
+def simulate_model_for_parameter_values(parameter_values, model, parameter_ids, time_vector, additional_model_parameters={}, additional_concentrations={}, initial_assignments={}):
     param_dict = dict(zip(parameter_ids, parameter_values))
     model.resetAll()
     if initial_assignments == {}:
         initial_assignments = tools.get_initial_assignments_dict(model)
-    model = model_data.set_model_parameters(model, param_dict)
-    model = evaluate_initial_assignments(model, initial_assignments)
+    model = model_data.set_model_parameters(model, param_dict)    
     model = model_data.set_model_parameters(model, additional_model_parameters)
+    model = model_data.set_model_parameters(model, additional_concentrations)
+    model = evaluate_initial_assignments(model, initial_assignments)
     steps, end_time = time_vector_to_steps_and_stop(time_vector)
+
+    #print model['']
     simulation_result_dict = simulate_model(model, end_time, steps)
     return simulation_result_dict
 
@@ -78,17 +81,32 @@ if __name__ == '__main__':
     import sys
     model = load_model(sys.argv[1])
     
-    #p_values = [  6.88059247e-15,   7.72725819e-15,  2.15751334e+00]
-    #parameters_to_fit = ['k_nutrient', 'k_deg', 'r_os']
+    #p_values = [  1e13,   1e13,   2.04684012e+00]
+    #parameters_to_fit = ['k_nutrient', 'k_deg', 'mother_r_os']
     p_values = []
     parameters_to_fit = []
 
+    p_values = [  9.97602966e-15,   1.11386367e-14, 1e-4, 1e-4]
+
+    parameters_to_fit = ['k_nutrient', 'k_deg', 'mother_phi', 'bud_phi'] 
 
 
     #model = select_model_timecourses()
     #additional_model_parameters = {'[c_i]': 319} 
-    additional_model_parameters = {}
-    simulation_result = simulate_model_for_parameter_values( p_values, model, parameters_to_fit, range(7200) , additional_model_parameters=additional_model_parameters )
+    additional_model_parameters =  { 'budding_start': 126,
+                                    'mother_r_os': 0.97506339013385745,
+                                    'bud_r_os': 1.2142117908125938} 
+    #additional_model_parameters = {'[c_i]': 325,
+    #                                'r_os': 10}
+
+    additional_concentrations = {'[mother_c_i]': 325,
+                                    '[bud_c_i]': 325 }
+    
+
+
+    #additional_model_parameters = {}
+    simulation_result = simulate_model_for_parameter_values( p_values, model, parameters_to_fit, range(700) , additional_model_parameters=additional_model_parameters,
+    additional_concentrations=additional_concentrations )
     #simulation_result = simulate_model(model, end_time=500)
     plot((simulation_result,), legend=True)
 

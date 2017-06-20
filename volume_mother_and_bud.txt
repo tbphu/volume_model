@@ -7,11 +7,16 @@ model volume_mother_and_bud
 
   budding_start = 3600;
 
-  k_nutrient = 3.5e-16; // mM/s/um^2   
-  k_deg = 3.8e-16;
+  k_nutrient = 3.5e-15; // mM/s/um^2   
+  k_deg = 3.8e-15;
   bud.k_nutrient := k_nutrient;
-  mother.k_nutrient := k_deg;
+  bud.k_deg := k_deg;
 
+  mother.k_nutrient := k_nutrient;
+  mother.k_deg := k_deg;
+
+  //mother.r_os = 0.1
+  //bud.r_os = 0.01
 
   bud_start_in_the_bud = 0;
   bud.bud_start := bud_start_in_the_bud;
@@ -23,9 +28,9 @@ model volume_mother_and_bud
   mother.c_i -> bud.c_i; c_i_diffusion_coeff * (mother.c_i - bud.c_i) * bud_start_in_the_bud;   
 
   // water exchange between mother and bud
-  mother_bud_water_perm = 1. * 1e-15;
-  mother.dV_exchange := - mother_bud_water_perm * (mother.pi_t - bud.pi_t) * bud_start_in_the_bud;
-  bud.dV_exchange :=  mother_bud_water_perm * (mother.pi_t - bud.pi_t) * bud_start_in_the_bud;
+  mother_bud_water_perm = 1. * 1e-5;
+  mother.dV_exchange :=  -mother_bud_water_perm * (mother.pi_t - bud.pi_t) * bud_start_in_the_bud;
+  bud.dV_exchange :=   mother_bud_water_perm * (mother.pi_t - bud.pi_t) * bud_start_in_the_bud;
 
   ////// Seperation and Partitioning of macromolecules ########################
   // Uncomment the following 4 lines to enable Separation and Partitioning:

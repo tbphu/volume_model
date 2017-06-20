@@ -9,12 +9,15 @@ import tellurium as te
 from scipy.optimize import basinhopping
 plt.style.use('ggplot')
 
-def compute_sqd_distance(simulation_result_dict, data):
+def compute_sqd_distance(simulation_result_dict, data, normalized=False):
     dist = 0.
     for variable in simulation_result_dict:
         if variable == 'time':
             continue
-        dist += np.nansum((data[variable] - simulation_result_dict[variable])**2)
+        if normalized:
+          dist += np.nansum( ((data[variable] - simulation_result_dict[variable])**2)/data[variable])
+        else:
+          dist += np.nansum((data[variable] - simulation_result_dict[variable])**2)
     return dist
 
 def get_initial_volume_osmotic_from_data(model, data):
@@ -24,10 +27,15 @@ def get_initial_volume_osmotic_from_data(model, data):
     parameters = {'V_os': volume_osmotic}
     return parameters
 
-def compute_objective_function(parameter_values, model, parameter_ids, data, additional_model_parameters):
-    print parameter_values
+def compute_objective_function(parameter_values, model, parameter_ids, data, additional_model_parameters, additional_concentrations):
+    #print parameter_values
     try:
-        simulation_result_dict = simulate.simulate_model_for_parameter_values(parameter_values, model, parameter_ids, data['time'], additional_model_parameters)
+        simulation_result_dict = simulate.simulate_model_for_parameter_values(parameter_values, 
+                                                                              model, 
+                                                                              parameter_ids, 
+                                                                              data['time'], 
+                                                                              additional_model_parameters,
+                                                                              additional_concentrations)
     except RuntimeError:
         print 'Error simulating model for parameters %s' %parameter_values
         return np.nan
@@ -48,7 +56,7 @@ def fit_basin(initial_params, additional_arguments, bounds_min, bounds_max, basi
                         accept_test=bounds_basinhopping)
     return result.x
 
-def fit_cmaes(initial_params, additional_arguments, bounds_min, bounds_max, sigma0=4e-15, tolx=1e-25):
+def fit_cmaes(initial_params, additional_arguments, bounds_min, bounds_max, sigma0=4e-15, tolx=1e-20):
     options = cma.CMAOptions()
     #options.set('tolfun', 1e-14)
     options['tolx'] = tolx
@@ -68,18 +76,19 @@ def fit_model_to_data(model,
                       parameters_to_fit,
                       optimizer,
                       bounds={},
-                      additional_model_parameters={}):
+                      additional_model_parameters={},
+                      additional_concentrations={}):
     model.resetAll()
     reference_params = {p_id: model[p_id] for p_id in parameters_to_fit}
     initial_params = [reference_params[p_id] for p_id in parameters_to_fit]
     model = simulate.select_model_timecourses(model, data.keys())
-    additional_arguments = (model, parameters_to_fit, data, additional_model_parameters)
+    additional_arguments = (model, parameters_to_fit, data, additional_model_parameters, additional_concentrations)
     if bounds != {}:
         xmin = [bounds[p_id][0] for p_id in parameters_to_fit]
         xmax = [bounds[p_id][1] for p_id in parameters_to_fit]        
     else:
         xmin = [0.] * len(initial_params)
-        xmax = 100. * np.array(initial_params)
+        xmax = 100000. * np.array(initial_params)
     if optimizer == 'basin':
         return fit_basin(initial_params, additional_arguments, xmin, xmax)
     elif optimizer == 'cmaes':
@@ -92,13 +101,15 @@ def plot_fitting_result_and_data(model,
                                  data, 
                                  parameter_ids, 
                                  additional_model_parameters={},
+                                 additional_concentrations={},
                                  subplot=True, 
                                  show=True):
     simulation_result_dict = simulate.simulate_model_for_parameter_values(fitted_parameters, 
                                                                           model, 
                                                                           parameter_ids, 
                                                                           data['time'], 
-                                                                          additional_model_parameters=additional_model_parameters)
+                                                                          additional_model_parameters=additional_model_parameters,
+                                                                          additional_concentrations=additional_concentrations)
     simulate.plot((simulation_result_dict, data), subplot=subplot, show=show)
     
 
@@ -136,16 +147,20 @@ def fit_model_to_all_cells(model,
 if __name__ == '__main__':
     mothercells_data, daughtercells_data, time_data = model_data.load_data()
 
-    model = simulate.load_model('volume_reference_radius.txt')
+    #model = simulate.load_model('volume_reference_radius.txt')
+    model = simulate.load_model('volume_mother_and_bud.txt')
     
     
-    parameters_to_fit = ['k_nutrient', 'k_deg', 'r_os']
+    #parameters_to_fit = ['k_nutrient', 'k_deg', 'r_os']
+    parameters_to_fit = ['k_nutrient', 'k_deg', 'mother_r_os']
     
-    data = {'time': np.array(time_data), 'V_tot_fl': mothercells_data[1, :]}
+    #data = {'time': np.array(time_data), 'V_tot_fl': mothercells_data[1, :]}
+    data = {'time': np.array(time_data), 'mother_V_tot_fl': mothercells_data[1, :]}
     data = model_data.truncate_data(data)
     data['time'] = data['time'] + abs(min(data['time']))
 
-    additional_model_parameters = {'[c_i]': 319} #get_initial_volume_osmotic_from_data(model, data)
+    #additional_model_parameters = {'[c_i]': 319} #get_initial_volume_osmotic_from_data(model, data)
+    additional_model_parameters = {'[mother_c_i]': 319} #get_initial_volume_osmotic_from_data(model, data)
     fitted_parameters = fit_model_to_data(model, 
                                           data, 
                                           parameters_to_fit,   

@@ -51,10 +51,11 @@ model volume_rheology
   dr_os := (- Lp *(pi_t + pi_e - pi_i) + dr_exchange ) * bud_start
   
   // plastic expansion rate 
-  pi_t = 0.205e6; // Pa
+  //pi_t = 0.205e6; // Pa
+  pi_t = 0.20e6; // Pa
   pi_tc_0 = 0.2e6; // Pa
   d = 0.115; // um Goldenbogen, Giese 2016
-  phi = 1.e-6; // 1/Pa/s
+  phi = 1.e-4; // 1/Pa/s
   pi_tc := pi_tc_0
  
  // wall mechanics
@@ -70,8 +71,8 @@ model volume_rheology
   // nutrient uptake and consumptions
   //k_nutrient = 1.03290153e-14 //3.5e-16; // mM/s/um^2   
   //k_deg = 1.19204038e-14 //3.8e-16;
-  k_nutrient = 3.5e-16; // mM/s/um^2   
-  k_deg = 3.8e-16;
+  k_nutrient = 3.5e-15; // mM/s/um^2   
+  k_deg = 3.8e-15;
   
   k_transport = 0 
   

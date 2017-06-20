@@ -25,7 +25,7 @@ def get_initial_volume_osmotic_from_data(model, data):
     return parameters
 
 def compute_objective_function(parameter_values, model, parameter_ids, data, additional_model_parameters):
-    #print parameter_values
+    print parameter_values
     try:
         simulation_result_dict = simulate.simulate_model_for_parameter_values(parameter_values, model, parameter_ids, data['time'], additional_model_parameters)
     except RuntimeError:
@@ -79,7 +79,7 @@ def fit_model_to_data(model,
         xmax = [bounds[p_id][1] for p_id in parameters_to_fit]        
     else:
         xmin = [0.] * len(initial_params)
-        xmax = 1000000. * np.array(initial_params)
+        xmax = 100. * np.array(initial_params)
     if optimizer == 'basin':
         return fit_basin(initial_params, additional_arguments, xmin, xmax)
     elif optimizer == 'cmaes':
@@ -135,34 +135,22 @@ def fit_model_to_all_cells(model,
 
 if __name__ == '__main__':
     mothercells_data, daughtercells_data, time_data = model_data.load_data()
-    #plot_single_cell(time_data, mothercells_data[0, :], daughtercells_data[0, :])
-    #plot_data(mothercells_data, daughtercells_data, time_data)
 
     model = simulate.load_model('volume_reference_radius.txt')
-    #model = model_data.set_model_parameters(model, {'k_nutrient': 0})
-    #model = model_data.select_model_timecourses(['V_tot_fl'])
-    #simulation_result = simulate.simulate_model(model, end_time=7200)
-    #simulate.plot((simulation_result,), legend=True)
-
-
-
-
     
     
     parameters_to_fit = ['k_nutrient', 'k_deg', 'r_os']
-    #parameters_to_fit = ['k_nutrient', 'k_deg']
     
     data = {'time': np.array(time_data), 'V_tot_fl': mothercells_data[1, :]}
     data = model_data.truncate_data(data)
     data['time'] = data['time'] + abs(min(data['time']))
 
     additional_model_parameters = {'[c_i]': 319} #get_initial_volume_osmotic_from_data(model, data)
-    #print additional_model_parameters
     fitted_parameters = fit_model_to_data(model, 
                                           data, 
                                           parameters_to_fit,   
-                                          'cmaes', additional_model_parameters=additional_model_parameters) 
-                                          #additional_model_parameters=additional_model_parameters)
+                                          'cmaes', 
+                                          additional_model_parameters=additional_model_parameters) 
     print fitted_parameters
     plot_fitting_result_and_data(model, fitted_parameters, data, parameters_to_fit, subplot=True, additional_model_parameters=additional_model_parameters)
 

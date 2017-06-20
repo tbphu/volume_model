@@ -29,15 +29,17 @@ def plot_experimental_data(mothercells_data, daughtercells_data, time_data, subp
 
 def truncate_data(data):
     """ truncate data in such a way that there are no leading or trailing nan values left"""
-    pos_min = 0
-    pos_max = np.inf
+    pos_min = np.inf
+    pos_max = 0
     for variable in data:
+        if variable == 'time':
+            continue
         data_vec_wo_nan = np.where(~np.isnan(data[variable]))
         start_pos = data_vec_wo_nan[0][0]
         end_pos = data_vec_wo_nan[0][-1]
-        if start_pos > pos_min:
+        if start_pos < pos_min:
             pos_min = start_pos
-        if end_pos < pos_max:
+        if end_pos > pos_max:
             pos_max = end_pos
     for variable in data:
         data[variable] = data[variable][pos_min:pos_max]

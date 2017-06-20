@@ -7,6 +7,11 @@ model volume_mother_and_bud
 
   budding_start = 3600;
 
+  k_nutrient = 3.5e-16; // mM/s/um^2   
+  k_deg = 3.8e-16;
+  bud.k_nutrient := k_nutrient;
+  mother.k_nutrient := k_deg;
+
 
   bud_start_in_the_bud = 0;
   bud.bud_start := bud_start_in_the_bud;
@@ -14,7 +19,7 @@ model volume_mother_and_bud
 
 
   // solute dffusion between mother and bud
-  c_i_diffusion_coeff = 1e-13;
+  c_i_diffusion_coeff = 1e-13; // idea: apparent diffusion coefficient (in addition it describes the permeability through the budneck)
   mother.c_i -> bud.c_i; c_i_diffusion_coeff * (mother.c_i - bud.c_i) * bud_start_in_the_bud;   
 
   // water exchange between mother and bud

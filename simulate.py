@@ -92,10 +92,10 @@ if __name__ == '__main__':
 
 
     #model = select_model_timecourses()
-    #additional_model_parameters = {'[c_i]': 319} 
-    additional_model_parameters =  { 'budding_start': 126,
-                                    'mother_r_os': 0.97506339013385745,
-                                    'bud_r_os': 1.2142117908125938} 
+    additional_model_parameters = { 'budding_start': 126}
+    #additional_model_parameters =  { 'budding_start': 126,
+    #                                'mother_r_os': 0.97506339013385745,
+    #                                'bud_r_os': 1.2142117908125938} 
     #additional_model_parameters = {'[c_i]': 325,
     #                                'r_os': 10}
 
@@ -105,7 +105,7 @@ if __name__ == '__main__':
 
 
     #additional_model_parameters = {}
-    simulation_result = simulate_model_for_parameter_values( p_values, model, parameters_to_fit, range(700) , additional_model_parameters=additional_model_parameters,
+    simulation_result = simulate_model_for_parameter_values( p_values, model, parameters_to_fit, range(400) , additional_model_parameters=additional_model_parameters,
     additional_concentrations=additional_concentrations )
     #simulation_result = simulate_model(model, end_time=500)
     plot((simulation_result,), legend=True)

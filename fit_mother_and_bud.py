@@ -13,6 +13,11 @@ def volume_to_radius(volume):
     return r
 
 
+def fit_single_mother_and_bud():
+    pass
+
+
+
 if __name__ == '__main__':
     mothercells_data, daughtercells_data, time_data = model_data.load_data()
     
@@ -28,10 +33,11 @@ if __name__ == '__main__':
     #simulate.plot((simulation_result,), legend=True)
 
     
-    parameters_to_fit = ['k_nutrient', 'k_deg']
+    parameters_to_fit = ['k_nutrient', 'k_deg','mother_phi','bud_phi']
     
 
-    cell_id = 5
+    cell_id = 2
+
     data = {'time': np.array(time_data), 
             'mother_V_tot_fl': mothercells_data[cell_id, :],
             'bud_V_tot_fl': daughtercells_data[cell_id, :]}

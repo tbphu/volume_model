@@ -3,7 +3,8 @@ import model_data
 import simulate
 import matplotlib.pyplot as plt
 import numpy as np
-import tellurium as te
+import tellurium as tet
+import pandas as pd
 plt.style.use('ggplot')
 
 
@@ -13,7 +14,13 @@ def volume_to_radius(volume):
     return r
 
 
-def fit_single_mother_and_bud():
+def fit_single_mother_and_bud(data, model, parameters_to_fit, 
+                                additional_concentrations, additional_model_parameters):
+    mothercells_data, daughtercells_data, time_data = model_data.load_data()
+    time_data = time_data * 60
+    model = simulate.load_model('volume_mother_and_bud.txt')
+
+
     pass
 
 
@@ -35,56 +42,64 @@ if __name__ == '__main__':
     
     parameters_to_fit = ['k_nutrient', 'k_deg','mother_phi','bud_phi']
     
+    cell_ids = np.size(mothercells_data[:,1])
+    fit_para_list=[]
 
-    cell_id = 2
+    for cell_id in range(cell_ids):
+        print cell_id 
+        data = {'time': np.array(time_data), 
+                'mother_V_tot_fl': mothercells_data[cell_id, :],
+                'bud_V_tot_fl': daughtercells_data[cell_id, :]}
 
-    data = {'time': np.array(time_data), 
-            'mother_V_tot_fl': mothercells_data[cell_id, :],
-            'bud_V_tot_fl': daughtercells_data[cell_id, :]}
-
-    data = model_data.truncate_data(data)
-
-
-    #budding_start = abs(min(data['time']))
-    data['time'] = data['time'] + abs(min(data['time']))
-    budding_start = data['time'][ ~np.isnan(data['bud_V_tot_fl']) ][0]
-
-    #data['time'] = data['time'] + budding_start
-    
-
-    volume_mother_0 = data['mother_V_tot_fl'][0]
-    volume_bud_0 = data['bud_V_tot_fl'][ ~np.isnan(data['bud_V_tot_fl']) ][0]
-
-    r_tot_mother = volume_to_radius(volume_mother_0)
-    r_tot_bud = volume_to_radius(volume_bud_0)
-    r_os_mother = r_tot_mother - model['mother_r_b']
-    r_os_bud = r_tot_bud - model['bud_r_b']
+        data = model_data.truncate_data(data)
 
 
+        #budding_start = abs(min(data['time']))
+        data['time'] = data['time'] + abs(min(data['time']))
+        budding_start = data['time'][ ~np.isnan(data['bud_V_tot_fl']) ][0]
 
-    additional_model_parameters = { 'mother_r_os': r_os_mother,
-                                   'bud_r_os': r_os_bud,                                   
-                                   'budding_start': budding_start }  
+        #data['time'] = data['time'] + budding_start
+        
 
-    additional_concentrations = {'[mother_c_i]': 325,
-                                   '[bud_c_i]': 325 }
+        volume_mother_0 = data['mother_V_tot_fl'][0]
+        volume_bud_0 = data['bud_V_tot_fl'][ ~np.isnan(data['bud_V_tot_fl']) ][0]
 
-    #print additional_model_parameters
-    fitted_parameters = fit_data.fit_model_to_data(model, 
-                                          data, 
-                                          parameters_to_fit,   
-                                          'cmaes', 
-                                          additional_model_parameters=additional_model_parameters,
-                                          additional_concentrations=additional_concentrations) 
+        r_tot_mother = volume_to_radius(volume_mother_0)
+        r_tot_bud = volume_to_radius(volume_bud_0)
+        r_os_mother = r_tot_mother - model['mother_r_b']
+        r_os_bud = r_tot_bud - model['bud_r_b']
 
-    print 'fit params%s'  %fitted_parameters
-    fit_data.plot_fitting_result_and_data(model, 
-                                          fitted_parameters, 
-                                          data, 
-                                          parameters_to_fit, 
-                                          subplot=True, 
-                                          additional_model_parameters=additional_model_parameters,
-                                          additional_concentrations=additional_concentrations)
 
+
+        additional_model_parameters = { 'mother_r_os': r_os_mother,
+                                       'bud_r_os': r_os_bud,                                   
+                                       'budding_start': budding_start }  
+
+        additional_concentrations = {'[mother_c_i]': 325,
+                                       '[bud_c_i]': 325 }
+
+        #print additional_model_parameters
+        fitted_parameters = fit_data.fit_model_to_data(model, 
+                                              data, 
+                                              parameters_to_fit,   
+                                              'cmaes', 
+                                              additional_model_parameters=additional_model_parameters,
+                                              additional_concentrations=additional_concentrations) 
+
+        print 'fit params%s'  %fitted_parameters
+        fit_data.plot_fitting_result_and_data(model, 
+                                              fitted_parameters, 
+                                              data, 
+                                              parameters_to_fit, 
+                                              subplot=True, 
+                                              additional_model_parameters=additional_model_parameters,
+                                              additional_concentrations=additional_concentrations)
+        fit_para_list.append(fitted_parameters)
+
+
+df=pd.DataFrame(fit_para_list) 
+df.columns=parameters_to_fit   
+plt.figure(2)
+df.mean().plot(kind='bar')
     #fitted_parameters = fit_model_to_all_cells(model, mothercells_data, daughtercells_data, time_data, parameters_to_fit)
     #plot_fitting_result_and_data(model, fitted_parameters, mothercells_data, parameters_to_fit, subplot=True)

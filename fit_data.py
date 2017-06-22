@@ -15,9 +15,9 @@ def compute_sqd_distance(simulation_result_dict, data, normalized=False):
         if variable == 'time':
             continue
         if normalized:
-          dist += np.nansum( ((data[variable] - simulation_result_dict[variable])**2)/data[variable])
+          dist += np.nansum( ((data[variable] - simulation_result_dict[variable])**2)/data[variable]) / sum(~np.isnan(data[variable]))
         else:
-          dist += np.nansum((data[variable] - simulation_result_dict[variable])**2)
+          dist += np.nansum((data[variable] - simulation_result_dict[variable])**2) / sum(~np.isnan(data[variable]))
     return dist
 
 def get_initial_volume_osmotic_from_data(model, data):
@@ -103,7 +103,8 @@ def plot_fitting_result_and_data(model,
                                  additional_model_parameters={},
                                  additional_concentrations={},
                                  subplot=True, 
-                                 show=True):
+                                 show=True,
+                                 legend=True):
     model = simulate.select_model_timecourses(model, data.keys())
     simulation_result_dict = simulate.simulate_model_for_parameter_values(fitted_parameters, 
                                                                           model, 
@@ -111,7 +112,7 @@ def plot_fitting_result_and_data(model,
                                                                           data['time'], 
                                                                           additional_model_parameters=additional_model_parameters,
                                                                           additional_concentrations=additional_concentrations)
-    simulate.plot((simulation_result_dict, data), subplot=subplot, show=show)
+    simulate.plot((simulation_result_dict, data), subplot=subplot, show=show, legend=legend)
     
 
 def fit_model_to_all_cells(model, 
@@ -125,6 +126,7 @@ def fit_model_to_all_cells(model,
         data = {'time': np.array(time_data), 'V_tot_fl': mothercells_data[mother_pos, :]}
         data = model_data.truncate_data(data)
         data['time'] = data['time'] + abs(min(data['time']))
+        data = model_data.limit_time_in_data(data, max_time=400)
         additional_model_parameters = get_initial_volume_osmotic_from_data(model, data)
         fitted_parameters = fit_model_to_data(model, 
                                               data, 

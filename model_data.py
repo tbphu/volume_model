@@ -45,6 +45,12 @@ def truncate_data(data):
         data[variable] = data[variable][pos_min:pos_max]
     return data
 
+def limit_time_in_data(data, max_time=400):
+    ind = data['time'] < max_time
+    for key in data:
+        data[key] = data[key][ind]
+    return data
+
 def get_initial_values_from_data(data):
     initial_values = {}
     for variable in data:

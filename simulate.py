@@ -24,7 +24,7 @@ def plot(data_tuple, subplot=True, show=True, legend=True):
                 plt.title(str(variable))
         for data_number, data_dict in enumerate(data_tuple):
             plt.plot(time, data_dict[variable], label=str(variable) + '_%s' % data_number)
-            plt.xlim(-200, time[-1])
+            plt.xlim(-50, time[-1])
     if legend:
         plt.legend()
     if show:
@@ -86,13 +86,14 @@ if __name__ == '__main__':
     p_values = []
     parameters_to_fit = []
 
-    p_values = [  9.97602966e-15,   1.11386367e-14, 1e-4, 1e-4]
+    p_values = [2.576782e-14,  3.124156e-14,  4.498614e-04,  1.783651e-02 ]
 
     parameters_to_fit = ['k_nutrient', 'k_deg', 'mother_phi', 'bud_phi'] 
 
 
     #model = select_model_timecourses()
     additional_model_parameters = { 'budding_start': 126}
+    additional_model_parameters = {'mother_r_os': 1.239061741911077, 'budding_start': 129, 'bud_r_os': 1.2239599669205963}
     #additional_model_parameters =  { 'budding_start': 126,
     #                                'mother_r_os': 0.97506339013385745,
     #                                'bud_r_os': 1.2142117908125938} 

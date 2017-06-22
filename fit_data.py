@@ -104,6 +104,7 @@ def plot_fitting_result_and_data(model,
                                  additional_concentrations={},
                                  subplot=True, 
                                  show=True):
+    model = simulate.select_model_timecourses(model, data.keys())
     simulation_result_dict = simulate.simulate_model_for_parameter_values(fitted_parameters, 
                                                                           model, 
                                                                           parameter_ids, 

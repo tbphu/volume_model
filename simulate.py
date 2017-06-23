@@ -44,7 +44,14 @@ def select_model_timecourses(model, time_course_selections):
         model.timeCourseSelections = ['time'] + time_course_selections
     return model
 
+def set_integrator_options(model):
+    model.integrator.relative_tolerance = 1e-10
+    #model.integrator.absolute_tolerance = 1e-16
+    #model.integrator.variable_step_size = True
+    return model
+
 def simulate_model(model, end_time, steps=100):
+    model = set_integrator_options(model)
     simulation_result = model.simulate(0, end_time, steps)
     return simulation_to_dict(simulation_result)
 
@@ -72,7 +79,7 @@ def simulate_model_for_parameter_values(parameter_values, model, parameter_ids, 
     model = evaluate_initial_assignments(model, initial_assignments)
     steps, end_time = time_vector_to_steps_and_stop(time_vector)
 
-    #print model['']
+    #print model['']#
     simulation_result_dict = simulate_model(model, end_time, steps)
     return simulation_result_dict
 
@@ -106,7 +113,7 @@ if __name__ == '__main__':
 
 
     #additional_model_parameters = {}
-    simulation_result = simulate_model_for_parameter_values( p_values, model, parameters_to_fit, range(400) , additional_model_parameters=additional_model_parameters,
+    simulation_result = simulate_model_for_parameter_values( p_values, model, parameters_to_fit,  np.linspace(0,400, 10000), additional_model_parameters=additional_model_parameters,
     additional_concentrations=additional_concentrations )
     #simulation_result = simulate_model(model, end_time=500)
     plot((simulation_result,), legend=True)

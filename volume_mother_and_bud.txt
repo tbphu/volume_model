@@ -32,8 +32,8 @@ model volume_mother_and_bud
 
 
   // solute dffusion between mother and bud
-  c_i_diffusion_coeff = 1e-13; // idea: apparent diffusion coefficient (in addition it describes the permeability through the budneck)
-  mother.c_i -> bud.c_i; c_i_diffusion_coeff * (mother.c_i - bud.c_i) * bud_start_in_the_bud;   
+  c_i_diffusion_coeff = 1e-11; // idea: apparent diffusion coefficient (in addition it describes the permeability through the budneck)
+  mother.c_i -> bud.c_i; c_i_diffusion_coeff * (mother.c_i - bud.c_i) * bud_start_in_the_bud ;   
 
   // water exchange between mother and bud
   mother_bud_water_perm = 1. * 1e-5;

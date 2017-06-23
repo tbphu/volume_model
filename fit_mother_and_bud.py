@@ -149,13 +149,13 @@ if __name__ == '__main__':
     time_data = time_data * 60 # convert time to seconds
     model = simulate.load_model('volume_mother_and_bud.txt')
     
-    parameters_to_fit = ['k_nutrient', 'k_deg', 'c_i_diffusion_coeff', 'mother_phi', 'bud_phi']
+    parameters_to_fit = ['k_nutrient', 'k_deg', 'mother_phi', 'bud_phi']
     
 
     additional_concentrations = {'[mother_c_i]': 325,
                                  '[bud_c_i]': 325 }
 
-    if 0:
+    if 1:
       df_params = fit_all_mother_bud(model, 
                                      mothercells_data, 
                                      daughtercells_data, 

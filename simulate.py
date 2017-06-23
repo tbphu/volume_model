@@ -93,14 +93,20 @@ if __name__ == '__main__':
     p_values = []
     parameters_to_fit = []
 
-    p_values = [2.576782e-14,  3.124156e-14,  4.498614e-04,  1.783651e-02 ]
+    
+    #parameters_to_fit = ['k_nutrient', 'k_deg', 'mother_phi', 'bud_phi'] 
+    #p_values = [2.576782e-14,  3.124156e-14,  4.498614e-04,  1.783651e-02 ]
+    #additional_model_parameters = {'mother_r_os': 1.239061741911077, 'budding_start': 129, 'bud_r_os': 1.2239599669205963}
+    
 
-    parameters_to_fit = ['k_nutrient', 'k_deg', 'mother_phi', 'bud_phi'] 
+    parameters_to_fit = ['k_nutrient', 'k_deg', 'c_i_diffusion_coeff', 'mother_phi', 'bud_phi'] 
+    #p_values = [2.190823e-14, 2.646816e-14, 6.268674e-14, 1.250327e-02,  0.004421 ]
+    p_values = [2.190823e-14, 2.646816e-14, 1e-12, 1.250327e-02,  0.004421 ]
+    additional_model_parameters = {'mother_r_os': 1.211627511265936, 'budding_start': 129, 'bud_r_os': 1.203897177254015}
 
 
     #model = select_model_timecourses()
-    additional_model_parameters = { 'budding_start': 126}
-    additional_model_parameters = {'mother_r_os': 1.239061741911077, 'budding_start': 129, 'bud_r_os': 1.2239599669205963}
+    #additional_model_parameters = { 'budding_start': 126}
     #additional_model_parameters =  { 'budding_start': 126,
     #                                'mother_r_os': 0.97506339013385745,
     #                                'bud_r_os': 1.2142117908125938} 

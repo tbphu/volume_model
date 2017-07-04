@@ -1,0 +1,138 @@
+###
+# The model was originally published by Zhike et al. 2010 
+# as a Matlab implementation.
+# Translated manually to Antimony:
+###
+
+model hog_zhike
+	#units
+	#unit fl = 1e-15 liter;
+	#unit mM = 1e-3 mole;
+
+	#compartments	
+	compartment cyto;
+	# cyto := V_os# * 1e-15 liter;
+	cyto := V_cyt;
+	#cyto has fl;
+	compartment nuc;
+	nuc := V_nuc# * 1e-15 liter;
+	#nuc has fl;
+	compartment nuc in cyto;
+
+
+	# variables
+	species Pbs2 in cyto 	= 0.1231 * 1e-3; 	#mM  
+	species	Pbs2PP in cyto 	= 0.000616 * 1e-3; 	#mM 
+	species	Hog1c in cyto 	= 0.3426 * 1e-3; 	#mM
+	species	Hog1PPc in cyto = 0.004443 * 1e-3; 	#mM
+	species	Hog1n in nuc	= 0.2918 * 1e-3; 	#mM
+	species	Hog1PPn in nuc  = 0.00338 * 1e-3; 	#mM
+	species	Glyc_in in cyto = 576000 * 1e-3; 	#mM
+	species	Yt in cyto		= 1.811 * 1e-3; 	#mM
+
+	Glyc_in_0 				= 576000 * 1e-3; 	#mM
+								
+	z1						= 0.00338 * 1e-3; 	#mM
+	z2						= 0.00338 * 1e-3; 	#mM
+	z3						= 0.00338 * 1e-3; 	#mM
+	z4						= 0.00338 * 1e-3; 	#mM
+	V_os 					= 34.8;				#fl #liter -> defined in volume regulation! 	
+
+	# parameters
+	k_Pbs2_pho		= 39.22 / 60;		 	#per sec #
+	k_Hog1_pho 		= 11.2 * 1e3 / 60;  	#per mM per sec 
+	k_Hog1n_exp 	= 6.36 / 60;			#per sec
+	k_Hog1PPn_depho = 4.144 / 60;			#per sec
+	beta 			= 0.2992;  				#dimensionless
+	k_Glyc_exp1 	= 0.02963 / 60;			#per sec 
+	k_Yt_s1 		= 1.204 / 60;			#per sec 
+	w 				= 4.688 * 1e-3 * 1e6	# 1e-6 J per m**3 per mM
+	f_V_cyt 		= 0.5;      			#dimensionless 
+	V_cell_0  		= 58;   				# fl						#-> defined in volume regulation!
+	pi_e_0		    = 0.625 * 1e6;     		# Pa						#-> defined in volume regulation!
+	n_Hog1_total	= 6780;             	# total number of Hog1, Zhike2010 
+	n_0				= 4.176 * 1e3; # * 1e-15;	# mmol					#TODO: unit check, cause may corrupt
+	N_a 			= 6.02 * 1e23			# per mol
+	R               = 8.314;        		# J/mol/K
+	T               = 303.15;          		# K	
+
+
+	
+	
+
+	alpha 			= 0.398  * 1e6;			# Pa 	
+	k_Hog1PPc_depho = 0.09061 / 60;			#per sec
+	k_Hog1PPc_imp   = 1.195 / 60;			#per sec
+	k_Glyc_s0       = 5248 * 1e-3 / 60;		#mM per sec
+	k_Glyc_s2 		= 1139 / 60;			#per sec
+	gamma 			= 0.9626 * 1e6; 		# Pa 	
+	k_Yt_t 			= 0.008934 / 60;		#per sec
+	G 				= 72.4607;  			#um**2		 				#-> defined in volume regulation!
+	f_V_nuc 	    = 0.07;  				#dimensionless
+	V_os_0	        = 34.8;			 		#fl 						#-> defined in volume regulation!
+	pi_t_0 		    = 0.875 * 1e6;   		# Pa						#-> defined in volume regulation!	
+
+	k_Pbs2_depho	= 13.44 / 60;			#per sec
+	k_Hog1c_imp 	= 0.7528 / 60;			#per sec
+	k_Hog1PPn_exp	= 7.076 / 60;			#per sec
+	k_Glyc_s1		= 56140* 1e-3 / 60;		#mM per sec
+	k_Glyc_exp0 	= 0.005 / 60;			#per sec
+	k_Yt_s0 	 	= 0.01211* 1e-3 / 60	#mM per sec
+	tau 			= 20 * 60;		    	#sec
+	Lp 		        = 0.2497 / 60 * 1e-6;   #um per Pa per sec 			#-> defined in volume regulation!
+	V_pit0_os       = 30.63;  		    	#fl 						#-> defined in volume regulation!
+	V_b 			= 23.2;  				#fl 						#-> defined in volume regulation!
+	pi_i_0	      	= 1.5 * 1e6; 			#Pa 						#-> defined in volume regulation!	
+
+	
+	NaCl			= 0;
+
+	#algebraic equations
+	pi_e := pi_e_0+w*NaCl;
+	pi_t := MAX(pi_t_0*(V_os-V_pit0_os)/(34.8-V_pit0_os),0)
+	V_cell := V_os+V_b;
+	V_cyt := f_V_cyt*V_cell;
+	V_nuc := f_V_nuc*V_cell;
+	pi_i := (n_0+Glyc_in*V_cyt)*R*T/V_os;# * 1e-6;
+	V_ratio := -G*Lp*(pi_t+pi_e-pi_i)/V_cell;
+	totalHog1PP := 1e-15 * 1e-3 * (Hog1PPc*V_cyt+Hog1PPn*V_nuc)*N_a/n_Hog1_total; # for unitconversion fl<->l: 1e-15 mmol<->mol: 1e-3
+	Glyc_ex := 0;     							# for flow cell system with microfluidic device	
+		
+	hill_exponent = 8;
+
+	#Reactions
+	P0:  Pbs2 	 => Pbs2PP;		cyto*k_Pbs2_pho * Pbs2 / (1+(pi_t/alpha)^hill_exponent);
+	DP0: Pbs2PP  => Pbs2; 		cyto*k_Pbs2_depho * Pbs2PP;
+	P1:  Hog1c 	 => Hog1PPc; 	cyto*k_Hog1_pho * Pbs2PP * Hog1c;
+	DP1: Hog1PPc => Hog1c; 		cyto*k_Hog1PPc_depho * Hog1PPc;
+
+	T0a: Hog1c 	 => ;  			cyto*k_Hog1c_imp * Hog1c;
+	T0b:  	     => Hog1n;  	nuc*k_Hog1c_imp * Hog1c ;#* V_cyt / V_nuc;
+	
+	T1a: Hog1n   => ;  			nuc*k_Hog1n_exp * Hog1n;
+	T1b:  		 => Hog1c;  	cyto*k_Hog1n_exp * Hog1n ;#* V_nuc / V_cyt;
+	DP2: Hog1PPn => Hog1n;  	nuc*k_Hog1PPn_depho * Hog1PPn;
+	
+	T2a: Hog1PPc => ;  			cyto*k_Hog1PPc_imp * Hog1PPc;
+	T2b:  		 => Hog1PPn;  	nuc*k_Hog1PPc_imp * Hog1PPc ;#* V_cyt / V_nuc;
+	
+	T3a: Hog1PPn => ;  			nuc*k_Hog1PPn_exp * Hog1PPn;
+	T3b:  		 => Hog1PPc;  	cyto*k_Hog1PPn_exp * Hog1PPn ;#* V_nuc / V_cyt;
+   	Acc:		 => Glyc_in; 	cyto*k_Glyc_s0;
+    			 => Glyc_in; 	cyto*k_Glyc_s1 * totalHog1PP^4 / (beta^4 + totalHog1PP^4);
+    			 => Glyc_in;	cyto*k_Glyc_s2 * Yt
+
+    hill_exponent_eflux = 12;
+    	 Glyc_in => ; 			cyto*(k_Glyc_exp0 + k_Glyc_exp1*pi_t^hill_exponent_eflux/(gamma^hill_exponent_eflux+pi_t^hill_exponent_eflux)) * (Glyc_in-Glyc_ex);
+				 => Yt;			cyto*k_Yt_s0;
+			  	 => Yt; 		cyto*k_Yt_s1 * z4;
+		 Yt		 => ; 			cyto*k_Yt_t * Yt;    
+
+	#Differential equations
+	z1'= 4*(Hog1PPn-z1)/tau
+	z2'= 4*(z1-z2)/tau
+	z3'= 4*(z2-z3)/tau
+	z4'= 4*(z3-z4)/tau
+	V_os'=-G*Lp*(pi_t+pi_e-pi_i)
+
+end

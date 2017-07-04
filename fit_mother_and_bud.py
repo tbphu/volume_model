@@ -68,7 +68,8 @@ def fit_all_mother_bud(model,
                        daughtercells_data,
                        time_data,
                        parameters_to_fit,
-                       additional_concentrations={}):
+                       additional_concentrations={}
+                       ):
   assert len(mothercells_data) == len(daughtercells_data)
   df_params = pd.DataFrame(columns=(parameters_to_fit + ['MSD']))
   for cell_id in range(len(mothercells_data)):
@@ -92,9 +93,9 @@ def plot_fitting_for_all(model,
   assert len(df_params) == len(mothercells_data)
   df_params = df_params.copy()
   df_params = df_params.drop('MSD', axis=1)
-  no_cols = 3
+  no_cols = 4
   no_rows = np.ceil(float(len(mothercells_data))/no_cols)
-  fig = plt.figure(1, figsize=(5,6))
+  fig = plt.figure(1, figsize=(10,12))
   ax = plt.subplot(no_rows, no_cols, 1)
   for cell_id in range(len(mothercells_data)):
     data = get_data_dict_for_cell(mothercells_data, daughtercells_data, time_data, cell_id)
@@ -116,8 +117,18 @@ def plot_fitting_for_all(model,
                                           additional_model_parameters=additional_model_parameters,
                                           additional_concentrations=additional_concentrations,
                                           legend=False)
-    plt.title('%s' %cell_id)
-    plt.tight_layout()
+    plt.ylabel('volume, fl')
+    plt.xlabel('time, min')
+    plt.title('Cell %s' %cell_id)
+  plt.legend(bbox_to_anchor=(1.5, 1),
+             loc=2, borderaxespad=0.,
+             labels=['bud volume (fitted)',
+             'bud volume ',
+             'mother volume (fitted)',
+             'mother volume '])
+
+  plt.tight_layout()
+
 
 
 
@@ -139,8 +150,15 @@ def plot_parameter_distribution(df_params):
   #cb = plt.colorbar(ax)
   #cb.set_label('mean square displacement', rotation=270)
 
+
+
 if __name__ == '__main__':
+
     mothercells_data, daughtercells_data, time_data = model_data.load_data()
+    #mothercells_data = reduce_time_in_data(mothercells_data, time_data, max_time=400)
+    #daughtercells_data = reduce_time_in_data(daughtercells_data, time_data, max_time=400)
+    #time_data = reduce_time_in_data(time_data, time_data, max_time=400)
+    print(mothercells_data)
 
     #mothercells_data = mothercells_data[:3, :]
     #daughtercells_data = daughtercells_data[:3, :]
@@ -155,7 +173,7 @@ if __name__ == '__main__':
     additional_concentrations = {'[mother_c_i]': 325,
                                  '[bud_c_i]': 325 }
 
-    if 1:
+    if 0:
       df_params = fit_all_mother_bud(model, 
                                      mothercells_data, 
                                      daughtercells_data, 
@@ -174,6 +192,8 @@ if __name__ == '__main__':
                            time_data,
                            df_params,
                            additional_concentrations)
+      if 0:
+        plt.savefig('plots/fits.png')
     else:
       df_stacked = plot_parameter_distribution(df_params)
 

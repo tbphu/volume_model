@@ -95,7 +95,16 @@ def fit_model_to_data(model,
         return fit_cmaes(initial_params, additional_arguments, xmin, xmax)
     else:
         raise Exception('unknown optimization method')
+def truncate_initial_budsize(simulation_result_dict, data): # NaN values in data result in NaN values of fit
 
+  n = np.nan
+  idx_first_notnan = np.argwhere(~np.isnan(data['bud_V_tot_fl'])>0)[0][0]
+  l = np.array([n for x in range(idx_first_notnan)])
+  trunc_ini_bud=np.concatenate([l,simulation_result_dict['bud_V_tot_fl'][idx_first_notnan:]])
+  simulation_result_dict['bud_V_tot_fl']  = trunc_ini_bud
+  
+  return simulation_result_dict
+  
 def plot_fitting_result_and_data(model, 
                                  fitted_parameters, 
                                  data, 
@@ -112,6 +121,8 @@ def plot_fitting_result_and_data(model,
                                                                           data['time'], 
                                                                           additional_model_parameters=additional_model_parameters,
                                                                           additional_concentrations=additional_concentrations)
+    if 1: # delete the initial budsize in the plot 
+      simulation_result_dict = truncate_initial_budsize(simulation_result_dict, data)
     simulate.plot((simulation_result_dict, data), subplot=subplot, show=show, legend=legend)
     
 

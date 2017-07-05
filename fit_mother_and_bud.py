@@ -192,7 +192,7 @@ if __name__ == '__main__':
                            time_data,
                            df_params,
                            additional_concentrations)
-      if 0:
+      if 1:
         plt.savefig('plots/fits.png')
     else:
       df_stacked = plot_parameter_distribution(df_params)

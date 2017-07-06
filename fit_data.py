@@ -56,12 +56,11 @@ def fit_basin(initial_params, additional_arguments, bounds_min, bounds_max, basi
                         accept_test=bounds_basinhopping)
     return result.x
 
-def fit_cmaes(initial_params, additional_arguments, bounds_min, bounds_max, sigma0=4e-15, tolx=1e-20):
+def fit_cmaes(initial_params, additional_arguments, bounds_min, bounds_max, sigma0=4e-16, tolx=1e-20):
     options = cma.CMAOptions()
     #options.set('tolfun', 1e-14)
     options['tolx'] = tolx
     options['bounds'] = (bounds_min, bounds_max)
-    print(options['bounds'])
     param_vec = np.array(initial_params)
     p_min = max(param_vec.min(), 1e-20)
     options['scaling_of_variables'] = param_vec / p_min
@@ -71,6 +70,26 @@ def fit_cmaes(initial_params, additional_arguments, bounds_min, bounds_max, sigm
                       options=options,
                       args=additional_arguments)
     return result[0]
+
+def define_bounds(parameters_to_fit, reference_params, bounds={}):
+    
+    xmin=[0]*len(parameters_to_fit)
+    xmax=[0]*len(parameters_to_fit)
+    
+    for k,p_id in enumerate(parameters_to_fit):
+
+      if p_id in bounds.keys():
+        xmin[k] = bounds[p_id][0] 
+        xmax[k] = bounds[p_id][1]
+      else:
+        xmin[k] = reference_params[p_id]*0.1 
+        xmax[k] = reference_params[p_id]*100   
+
+    print(bounds)    
+    print(parameters_to_fit)    
+    print(xmin,xmax)
+    return np.array(xmin), np.array(xmax)
+
 
 def fit_model_to_data(model,
                       data,
@@ -94,13 +113,16 @@ def fit_model_to_data(model,
     initial_params = [reference_params[p_id] for p_id in parameters_to_fit]
     model = simulate.select_model_timecourses(model, data.keys())
     additional_arguments = (model, parameters_to_fit, data, additional_model_parameters, additional_concentrations)
-    if bounds != {}:
+    
+    '''if bounds != {}:
         xmin = [bounds[p_id][0] for p_id in parameters_to_fit]
         xmax = [bounds[p_id][1] for p_id in parameters_to_fit] 
 
     else:
-        xmin = [0.] * len(initial_params)
-        xmax = 100000. * np.array(initial_params)
+        xmin = np.array([0.] * len(initial_params))
+        xmax = 100000. * np.array(initial_params)'''
+
+    xmin, xmax = define_bounds(parameters_to_fit, reference_params, bounds=bounds)    
     if optimizer == 'basin':
         return fit_basin(initial_params, additional_arguments, xmin, xmax)
     elif optimizer == 'cmaes':

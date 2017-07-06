@@ -16,11 +16,9 @@ def volume_to_radius(volume):
     r = (3./4/np.pi*volume) ** (1./3)
     return r
 
-def get_initial_parameter_guess(data):
-  params_ini = {}
+def get_initial_bud_start_guess(data):
   budding_start = data['time'][~np.isnan(data['bud_V_tot_fl'])][0]
-  params_ini['budding_start'] = budding_start
-  return params_ini 
+  return budding_start 
 
 
 def get_additional_model_parameters(data):
@@ -32,8 +30,8 @@ def get_additional_model_parameters(data):
   r_tot_bud = volume_to_radius(volume_bud_0)
   r_os_mother = r_tot_mother - model['mother_r_b']
   r_os_bud = r_tot_bud - model['bud_r_b']   
-  additional_model_parameters = { }#'mother_r_os': r_os_mother,
-                                  #'bud_r_os': r_os_bud}#,                                   
+  additional_model_parameters = { 'mother_r_os': r_os_mother}#,
+                                  #'bud_r_os': r_os_bud,                                   
                                   #'budding_start': budding_start }     
   return additional_model_parameters
 
@@ -56,16 +54,23 @@ def fit_single_mother_and_bud(model,
                               max_time=400,
                               params_ini={},
                               tolerance_factor=1):
+  
+  bounds={}
   data = get_data_dict_for_cell(mothercells_data, daughtercells_data, time_data, cell_id)
   data_trunc = model_data.truncate_data(data)
   data_trunc['time'] = data_trunc['time'] + abs(min(data_trunc['time']))
   data_trunc = model_data.limit_time_in_data(data_trunc, max_time=max_time)
   additional_model_parameters = get_additional_model_parameters(data_trunc)
   
-  
+  bud_start_data = get_initial_bud_start_guess(data_trunc)
+  start_tolerance = 100
+
   if params_ini=={}:
-    params_ini = get_initial_parameter_guess(data_trunc)
+    params_ini['budding_start'] = bud_start_data
     print(params_ini)
+  
+  bounds={}
+  bounds['budding_start'] = [bud_start_data - start_tolerance, bud_start_data + start_tolerance]
   
 
   fitted_parameters = fit_data.fit_model_to_data(model, 
@@ -75,7 +80,8 @@ def fit_single_mother_and_bud(model,
                                                  additional_model_parameters=additional_model_parameters,
                                                  additional_concentrations=additional_concentrations,
                                                  params_ini=params_ini,
-                                                 tolerance_factor=tolerance_factor)
+                                                 tolerance_factor=tolerance_factor,
+                                                 bounds=bounds)
   msd = fit_data.compute_objective_function(fitted_parameters, 
                                             model, 
                                             parameters_to_fit, 
@@ -196,7 +202,7 @@ if __name__ == '__main__':
 
     #budding_start=100  
     max_time=400
-    cells_to_test=1
+    cells_to_test=4
     mothercells_data, daughtercells_data, time_data = model_data.load_data()
     
     #mothercells_data = reduce_time_in_data(mothercells_data, time_data, max_time=400)
@@ -204,7 +210,7 @@ if __name__ == '__main__':
     #time_data = reduce_time_in_data(time_data, time_data, max_time=400)
     
     # 1 for test on cells_to_test
-    if 1:
+    if 0:
       mothercells_data = mothercells_data[:cells_to_test, :]
       daughtercells_data = daughtercells_data[:cells_to_test, :]
 
@@ -234,7 +240,7 @@ if __name__ == '__main__':
     else:
       df_params = pd.read_csv('fitted_parameters_parallel.csv', index_col=0)
 
-    if 1:
+    if 0:
       plot_fitting_for_all(model,
                            mothercells_data,
                            daughtercells_data,

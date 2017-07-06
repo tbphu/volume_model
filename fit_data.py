@@ -61,6 +61,7 @@ def fit_cmaes(initial_params, additional_arguments, bounds_min, bounds_max, sigm
     #options.set('tolfun', 1e-14)
     options['tolx'] = tolx
     options['bounds'] = (bounds_min, bounds_max)
+    print(options['bounds'])
     param_vec = np.array(initial_params)
     p_min = max(param_vec.min(), 1e-20)
     options['scaling_of_variables'] = param_vec / p_min
@@ -77,22 +78,33 @@ def fit_model_to_data(model,
                       optimizer,
                       bounds={},
                       additional_model_parameters={},
-                      additional_concentrations={}):
+                      additional_concentrations={},
+                      params_ini={},
+                      tolerance_factor = 1):
+    
+    tolx = 1e-20 *tolerance_factor 
+
     model.resetAll()
     reference_params = {p_id: model[p_id] for p_id in parameters_to_fit}
+
+    if params_ini!={}:
+      for p_id in params_ini:
+        reference_params[p_id] = params_ini[p_id]
+
     initial_params = [reference_params[p_id] for p_id in parameters_to_fit]
     model = simulate.select_model_timecourses(model, data.keys())
     additional_arguments = (model, parameters_to_fit, data, additional_model_parameters, additional_concentrations)
     if bounds != {}:
         xmin = [bounds[p_id][0] for p_id in parameters_to_fit]
-        xmax = [bounds[p_id][1] for p_id in parameters_to_fit]        
+        xmax = [bounds[p_id][1] for p_id in parameters_to_fit] 
+
     else:
         xmin = [0.] * len(initial_params)
         xmax = 100000. * np.array(initial_params)
     if optimizer == 'basin':
         return fit_basin(initial_params, additional_arguments, xmin, xmax)
     elif optimizer == 'cmaes':
-        return fit_cmaes(initial_params, additional_arguments, xmin, xmax)
+        return fit_cmaes(initial_params, additional_arguments, xmin, xmax, tolx=tolx)
     else:
         raise Exception('unknown optimization method')
 def truncate_initial_budsize(simulation_result_dict, data): # NaN values in data result in NaN values of fit
@@ -121,7 +133,7 @@ def plot_fitting_result_and_data(model,
                                                                           data['time'], 
                                                                           additional_model_parameters=additional_model_parameters,
                                                                           additional_concentrations=additional_concentrations)
-    if 1: # delete the initial budsize in the plot 
+    if 0: # delete the initial budsize in the plot 
       simulation_result_dict = truncate_initial_budsize(simulation_result_dict, data)
     simulate.plot((simulation_result_dict, data), subplot=subplot, show=show, legend=legend)
     
@@ -137,7 +149,7 @@ def fit_model_to_all_cells(model,
         data = {'time': np.array(time_data), 'V_tot_fl': mothercells_data[mother_pos, :]}
         data = model_data.truncate_data(data)
         data['time'] = data['time'] + abs(min(data['time']))
-        data = model_data.limit_time_in_data(data, max_time=400)
+        data = model_data.limit_time_in_data(data, max_time=300)
         additional_model_parameters = get_initial_volume_osmotic_from_data(model, data)
         fitted_parameters = fit_model_to_data(model, 
                                               data, 

@@ -15,7 +15,7 @@ model volume_mother_and_bud
   
   // diffrent cell wall elasticity of mother and bud
   mother.E_3d := 2.58e6
-  bud.E_3d := 4.5e6 // check values
+  bud.E_3d := 3.30e6 // Mother E*1.28 as calculated from the measurements 
 
 
 

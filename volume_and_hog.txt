@@ -35,12 +35,13 @@ model volume_hog
 
 
   ### Changeset 1: we model a generic internal osmolarity c_i and Glyc_in is part of the internal osmolarity.
-  c_i_0 = 319.17; # mM # TODO: use init value from volume model
-
+  c_i_0 is vol.c_i_0
   Glyc_in_0  = 10.; # mM
   hog.Glyc_in = Glyc_in_0;
   vol.c_i = c_i_0 - Glyc_in_0; # as this part of c_i, namely Glyc_in is explicitly modeled within the Hog1 model. 
-  vol.k_nutrient = 3.5e-15 - hog.k_Glyc_s0; # TODO: use parameter from volume model
+
+  k_nutrient_0 is vol.k_nutrient_0
+  vol.k_nutrient = k_nutrient_0 - hog.k_Glyc_s0;
 
   glycerol_correction_factor = Glyc_in_0/c_i_0;
   hog.Acc:   => hog.Glyc_in; cyto*glycerol_correction_factor*hog.k_Glyc_s0;

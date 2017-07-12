@@ -1,0 +1,61 @@
+import "volume_reference_radius.txt"
+import "hog_model_zhike2010.txt"
+
+# function modulo(a, b)
+#  a - b*floor(a/b);
+# end
+
+model volume_hog
+
+  hog: hog_zhike();  
+  hog.pi_t := ; 		# for converting an assignment into an ode
+  hog.pi_t' = ; 		# for converting an assignment into an ode
+  
+  vol: volume_rheology();
+
+  c_e in vol.extra; # necessary for events
+  c_e is vol.c_e;		# necessary for events
+
+  vol.pi_i :=;
+
+  hog.pi_i is vol.pi_i;
+  hog.pi_t is vol.pi_t;
+  hog.V_cell is vol.V_tot_fl;
+  #hog.V_os is vol.V_os;  
+  #delete hog.V_os # V_os deprecated as long as pi_i, pi_t and V_cell are defined.
+  #hog.V_os = ;
+  hog.V_os' = ;
+  #hog.V_ratio is vol.V_ratio;
+  delete hog.V_ratio; # V_ratio not used in zhike model
+  #hog.V_ratio := ;
+  
+  compartment cyto
+  cyto is hog.cyto;
+  cyto is vol.V_tot_liter;
+
+
+  ### Changeset 1: we model a generic internal osmolarity c_i and Glyc_in is part of the internal osmolarity.
+  c_i_0 = 319.17; # mM # TODO: use init value from volume model
+
+  Glyc_in_0  = 10.; # mM
+  hog.Glyc_in = Glyc_in_0;
+  vol.c_i = c_i_0 - Glyc_in_0; # as this part of c_i, namely Glyc_in is explicitly modeled within the Hog1 model. 
+  vol.k_nutrient = 3.5e-15 - hog.k_Glyc_s0; # TODO: use parameter from volume model
+
+  glycerol_correction_factor = Glyc_in_0/c_i_0;
+  hog.Acc:   => hog.Glyc_in; cyto*glycerol_correction_factor*hog.k_Glyc_s0;
+ 
+  vol.pi_i := (vol.c_i + hog.Glyc_in + hog.Pbs2 + hog.Pbs2PP + hog.Hog1c + hog.Hog1PPc + hog.Hog1n + hog.Hog1PPn + hog.Yt) * vol.R * vol.T; 
+
+
+  ### Changeset 2: Following adjustments were made due to new turgor value: 200kPa and the low Young's modulus
+  hog.alpha       = 0.175 * 1e6; # original value from zhike was: 0.398 * 1e6
+  hog.gamma       = 0.175 * 1e6; # originial value from zhike 0.9626 * 1e6
+
+  hog.beta   = 0.02;   #mM per sec
+
+  hog.hill_exponent = 48; # original value from zhike was: 8
+  hog.hill_exponent_eflux = 48;  # original value from zhike was: 12
+ 
+
+end

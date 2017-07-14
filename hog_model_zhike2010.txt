@@ -12,10 +12,10 @@ model hog_zhike
 	#compartments	
 	compartment cyto;
 	# cyto := V_os# * 1e-15 liter;
-	cyto := V_cyt;
+	cyto := V_cyt * 1e-15 liter;
 	#cyto has fl;
 	compartment nuc;
-	nuc := V_nuc# * 1e-15 liter;
+	nuc := V_nuc * 1e-15 liter;
 	#nuc has fl;
 	compartment nuc in cyto;
 
@@ -95,7 +95,10 @@ model hog_zhike
 	V_nuc := f_V_nuc*V_cell;
 	pi_i := (n_0+Glyc_in*V_cyt)*R*T/V_os;# * 1e-6;
 	V_ratio := -G*Lp*(pi_t+pi_e-pi_i)/V_cell;
-	totalHog1PP := 1e-15 * 1e-3 * (Hog1PPc*V_cyt+Hog1PPn*V_nuc)*N_a/n_Hog1_total; # for unitconversion fl<->l: 1e-15 mmol<->mol: 1e-3
+	#totalHog1PP := 1e-3 * (Hog1PPc*cyto+Hog1PPn*nuc)*N_a/n_Hog1_total; #mmol<->mol: 1e-3
+	#totalHog1PP := 1e-3 * 1e-15 * (Hog1PPc*cyto+Hog1PPn*nuc)*N_a/n_Hog1_total; # for unitconversion fl<->l: 1e-15 mmol<->mol: 1e-3
+	totalHog1PP := (Hog1PPc*cyto+Hog1PPn*nuc)/(Hog1c*cyto+Hog1n*nuc+Hog1PPc*cyto+Hog1PPn*nuc); # fraction of phosphorylated Hog molecules per total Hog1 molecules
+	n_totalHog1 := Hog1c*cyto+Hog1n*nuc+Hog1PPc*cyto+Hog1PPn*nuc # This is conserved.
 	Glyc_ex := 0;     							# for flow cell system with microfluidic device	
 		
 	hill_exponent = 8;
@@ -107,17 +110,17 @@ model hog_zhike
 	DP1: Hog1PPc => Hog1c; 		cyto*k_Hog1PPc_depho * Hog1PPc;
 
 	T0a: Hog1c 	 => ;  			cyto*k_Hog1c_imp * Hog1c;
-	T0b:  	     => Hog1n;  	nuc*k_Hog1c_imp * Hog1c ;#* V_cyt / V_nuc;
+	T0b:  	     => Hog1n;  	cyto*k_Hog1c_imp * Hog1c ;#* V_cyt / V_nuc;
 	
 	T1a: Hog1n   => ;  			nuc*k_Hog1n_exp * Hog1n;
-	T1b:  		 => Hog1c;  	cyto*k_Hog1n_exp * Hog1n ;#* V_nuc / V_cyt;
+	T1b:  		 => Hog1c;  	nuc*k_Hog1n_exp * Hog1n ;#* V_nuc / V_cyt;
 	DP2: Hog1PPn => Hog1n;  	nuc*k_Hog1PPn_depho * Hog1PPn;
 	
 	T2a: Hog1PPc => ;  			cyto*k_Hog1PPc_imp * Hog1PPc;
-	T2b:  		 => Hog1PPn;  	nuc*k_Hog1PPc_imp * Hog1PPc ;#* V_cyt / V_nuc;
+	T2b:  		 => Hog1PPn;  	cyto*k_Hog1PPc_imp * Hog1PPc ;#* V_cyt / V_nuc;
 	
 	T3a: Hog1PPn => ;  			nuc*k_Hog1PPn_exp * Hog1PPn;
-	T3b:  		 => Hog1PPc;  	cyto*k_Hog1PPn_exp * Hog1PPn ;#* V_nuc / V_cyt;
+	T3b:  		 => Hog1PPc;  	nuc*k_Hog1PPn_exp * Hog1PPn ;#* V_nuc / V_cyt;
    	Acc:		 => Glyc_in; 	cyto*k_Glyc_s0;
     			 => Glyc_in; 	cyto*k_Glyc_s1 * totalHog1PP^4 / (beta^4 + totalHog1PP^4);
     			 => Glyc_in;	cyto*k_Glyc_s2 * Yt

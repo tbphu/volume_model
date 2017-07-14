@@ -63,7 +63,7 @@ def fit_single_mother_and_bud(model,
   additional_model_parameters = get_additional_model_parameters(data_trunc)
   
   bud_start_data = get_initial_bud_start_guess(data_trunc)
-  start_tolerance = 100
+  start_tolerance = 110
 
   if params_ini=={}:
     params_ini['budding_start'] = bud_start_data
@@ -71,7 +71,8 @@ def fit_single_mother_and_bud(model,
   
   bounds={}
   bounds['budding_start'] = [bud_start_data - start_tolerance, bud_start_data + start_tolerance]
-  
+  bounds['mother_phi']= [5.e-7, 5.e-3]
+  bounds['bud_phi']= [5.e-5, 5.e-1 ]
 
   fitted_parameters = fit_data.fit_model_to_data(model, 
                                                  data_trunc, 
@@ -135,15 +136,28 @@ def plot_fitting_for_all(model,
                          time_data,
                          df_params,
                          additional_concentrations={},
-                         max_time=400):
+                         max_time=400,
+                         cols=4,
+                         max_cell_ID=0):
+  
+  if max_cell_ID == 0:
+    Cell_IDs = range(len(mothercells_data))
+  else:
+    Cell_IDs = range(max_cell_ID) 
+
+
+
+
   assert len(df_params) == len(mothercells_data)
   df_params = df_params.copy()
   df_params = df_params.drop('MSD', axis=1)
-  no_cols = 4
-  no_rows = np.ceil(float(len(mothercells_data))/no_cols)
-  fig = plt.figure(1, figsize=(10,12))
+  no_cols = cols
+  no_rows = np.ceil(float(len(Cell_IDs))/no_cols)
+  fig = plt.figure(1, figsize=(8,8))
   ax = plt.subplot(no_rows, no_cols, 1)
-  for cell_id in range(len(mothercells_data)):
+    
+
+  for cell_id in Cell_IDs:
     data = get_data_dict_for_cell(mothercells_data, daughtercells_data, time_data, cell_id)
     data_trunc = model_data.truncate_data(data)
     data_trunc['time'] = data_trunc['time'] + abs(min(data_trunc['time']))
@@ -163,8 +177,8 @@ def plot_fitting_for_all(model,
                                           additional_model_parameters=additional_model_parameters,
                                           additional_concentrations=additional_concentrations,
                                           legend=False)
-    plt.ylabel('volume, fl')
-    plt.xlabel('time, min')
+    plt.ylabel('volume, fl', fontsize='x-large')
+    plt.xlabel('time, min', fontsize='x-large')
     plt.title('Cell %s' %cell_id)
   plt.legend(bbox_to_anchor=(1.5, 1),
              loc=2, borderaxespad=0.,
@@ -184,17 +198,82 @@ def plot_parameter_distribution(df_params):
   df_stacked = df_params[['k_nutrient', 'k_deg']].stack()
   df_stacked = df_stacked.reset_index()
   df_stacked.columns = ['cell_id', 'parameter', 'value']
+  df_stacked['value']= df_stacked['value']*1e+15
   
-  plt.figure(2)
-  sns.swarmplot(x="parameter", y="value", data=df_stacked)
-  plt.ylim(0, 1e-13)
+  
+  plt.figure(2,figsize=(4,4))
+  sns.swarmplot(x="parameter", y="value", data=df_stacked, size=6)
+  plt.savefig('plots/fitted_ks_parallel.png')
 
   #plt.figure(3)
-  ax = df_params.plot(x='mother_phi', y='bud_phi', kind='scatter', color=df_params['MSD'], colormap='winter', s=100, fontsize='x-large')
-  plt.xlabel('extensility (mother),  $Pa^-1 s^-1$',fontsize='x-large')
-  plt.ylabel('extensility (bud),  $Pa^-1 s^-1$',fontsize='x-large')
+  fig, ax = plt.subplots(2,1)
+  fig.set_size_inches(7, 12)
+
+  lim0 = (1.e-7,5.e-1)
+  lim1 = (1.e-15, 0.25e-13)
+  
+  df_params.plot(x='mother_phi',
+                 y='bud_phi',
+                 kind='scatter',
+                 color=df_params['MSD'],
+                 colormap='winter',
+                 s=75,
+                 fontsize='xx-large',
+                 ax=ax[0])
+
+  ax[0].plot(np.arange(1.e-7,5.e-1,5e-6),
+            np.arange(1.e-7,5.e-1,5e-6),
+            'r--',
+            alpha = 0.3,
+            linewidth=2)
+  ax[0].set_xscale("log")#, nonposx='clip')
+  ax[0].set_xlim(lim0)
+  ax[0].set_yscale("log")#, nonposy='clip')
+  ax[0].set_ylim(lim0)
+  ax[0].set_xlabel('extensibility $\phi$ (mother),  $Pa^{-1} s^{-1}$',fontsize='xx-large')
+  ax[0].set_ylabel('extensibility $\phi$ (bud),  $Pa^{-1} s^{-1}$',fontsize='xx-large')
+  
+  df_params.plot(x='k_nutrient',
+                 y='k_deg',
+                 kind='scatter',
+                 color=df_params['MSD'],
+                 colormap='winter',
+                 s=75,
+                 fontsize='xx-large',
+                 ax=ax[1])
+
+  ax[1].plot(np.arange(1.e-15, 0.25e-13, 0.5e-15),
+            np.arange(1.e-15, 0.25e-13, 0.5e-15),
+            'r--',
+            alpha = 0.3,
+            linewidth=2)
+
+  ax[1].set_xlabel('$k_{nutrient}$', fontsize='xx-large')
+  ax[1].set_ylabel('$k_{deg}$', fontsize='xx-large')
+  lim1 = (1.e-15, 0.25e-13)
+  ax[1].set_xlim(lim1)
+  ax[1].set_ylim(lim1)
+  plt.tight_layout()
+  plt.savefig('plots/fitted__MB_phi__k_parallel.png')
+
+  
+
+  plt.figure(5)
+  df_stacked_budstart = df_params[['budding_start']].stack()
+  df_stacked_budstart = df_stacked_budstart.reset_index()
+  df_stacked_budstart.columns = ['cell_id', 'parameter', 'value']
+  #df_stacked['value']= df_stacked['value']*1e+15
+
+  sns.swarmplot(x="parameter", y="value", data=df_stacked_budstart, size=6)
+  plt.savefig('plots/fitted_budding_start.png')
+
+
+
+
   #cb = plt.colorbar(ax)
   #cb.set_label('mean square displacement', rotation=270)
+  return df_stacked  
+
 
 
 
@@ -226,7 +305,7 @@ if __name__ == '__main__':
     #params_ini = {'budding_start': budding_start}   # not mentioned initial parameters are taken from the model                          
     
     # 1 for fitting                             
-    if 1:
+    if 0:
       df_params = fit_all_mother_bud(model, 
                                      mothercells_data, 
                                      daughtercells_data, 
@@ -240,16 +319,22 @@ if __name__ == '__main__':
     else:
       df_params = pd.read_csv('fitted_parameters_parallel.csv', index_col=0)
 
-    if 0:
+    if 1:
+      
       plot_fitting_for_all(model,
                            mothercells_data,
                            daughtercells_data,
                            time_data,
                            df_params,
                            additional_concentrations,
-                           max_time=max_time)
-      if 0:
-        plt.savefig('plots/fits_parallel.png')
+                           max_time=max_time,
+                           cols=2,
+                           max_cell_ID=6)
+
+      if 1:
+        plt.savefig('plots/fits_parallel_6.png')
+       
+      #df_stacked = plot_parameter_distribution(df_params)  
     else:
       df_stacked = plot_parameter_distribution(df_params)
 

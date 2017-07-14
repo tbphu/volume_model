@@ -28,7 +28,7 @@ def get_initial_volume_osmotic_from_data(model, data):
     return parameters
 
 def compute_objective_function(parameter_values, model, parameter_ids, data, additional_model_parameters, additional_concentrations):
-    #print parameter_values
+    #print parameter_values 
     try:
         simulation_result_dict = simulate.simulate_model_for_parameter_values(parameter_values, 
                                                                               model, 
@@ -82,12 +82,13 @@ def define_bounds(parameters_to_fit, reference_params, bounds={}):
         xmin[k] = bounds[p_id][0] 
         xmax[k] = bounds[p_id][1]
       else:
-        xmin[k] = reference_params[p_id]*0.1 
-        xmax[k] = reference_params[p_id]*100   
+        xmin[k] = reference_params[p_id]*0.0005 
+        xmax[k] = reference_params[p_id]*5000   
 
-    print(bounds)    
-    print(parameters_to_fit)    
-    print(xmin,xmax)
+    print('bounds: {0}'.format(bounds))    
+    print('fitted parameters: {0}'.format(parameters_to_fit))    
+    print('xmin : {0}, xmax: {1}'.format(xmin,xmax))
+
     return np.array(xmin), np.array(xmax)
 
 
@@ -123,14 +124,15 @@ def fit_model_to_data(model,
         xmax = 100000. * np.array(initial_params)'''
 
     xmin, xmax = define_bounds(parameters_to_fit, reference_params, bounds=bounds)    
+    
     if optimizer == 'basin':
         return fit_basin(initial_params, additional_arguments, xmin, xmax)
     elif optimizer == 'cmaes':
         return fit_cmaes(initial_params, additional_arguments, xmin, xmax, tolx=tolx)
     else:
         raise Exception('unknown optimization method')
-def truncate_initial_budsize(simulation_result_dict, data): # NaN values in data result in NaN values of fit
 
+def truncate_initial_budsize(simulation_result_dict, data): # NaN values in data result in NaN values of fit
   n = np.nan
   idx_first_notnan = np.argwhere(~np.isnan(data['bud_V_tot_fl'])>0)[0][0]
   l = np.array([n for x in range(idx_first_notnan)])

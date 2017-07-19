@@ -7,6 +7,7 @@ import tellurium as tet
 import pandas as pd
 import seaborn as sns
 from multiprocessing import Pool
+import fit_kn_vs_kdeg
 
 plt.style.use('ggplot')
 
@@ -63,7 +64,7 @@ def fit_single_mother_and_bud(model,
   additional_model_parameters = get_additional_model_parameters(data_trunc)
   
   bud_start_data = get_initial_bud_start_guess(data_trunc)
-  start_tolerance = 110
+  start_tolerance = 110*60
 
   if params_ini=={}:
     params_ini['budding_start'] = bud_start_data
@@ -191,10 +192,30 @@ def plot_fitting_for_all(model,
 
 
 
+def set_colorbar_title(text,cbID=2):
+    f1 = plt.gcf()
+    cax=f1.get_axes()[cbID]
+    cax.set_ylabel(text, fontsize='x-large')
+
 
 def plot_parameter_distribution(df_params):
   #df_params = df_params.copy()
   #df_params = df_params.drop('MSD', axis=1)
+  
+  # linear fit through 0,0
+
+  max_k = 3.e-14
+  k_nut = np.arange(0,max_k + max_k / 10,max_k / 10)
+  
+  pop,pcov = fit_kn_vs_kdeg.fit_linear_k(df_params)
+  fitted_kdeg = fit_kn_vs_kdeg.linF(k_nut, pop[0]) 
+  
+  print('f(x) = m*x  \nm:{0}'.format(pop[0]))
+  print('pcov: {0}'.format(pcov[0][0]))
+  print('standard deviation: {0}'.format(np.sqrt(np.diag(pcov))))
+
+
+
   df_stacked = df_params[['k_nutrient', 'k_deg']].stack()
   df_stacked = df_stacked.reset_index()
   df_stacked.columns = ['cell_id', 'parameter', 'value']
@@ -210,22 +231,28 @@ def plot_parameter_distribution(df_params):
   fig.set_size_inches(7, 12)
 
   lim0 = (1.e-7,5.e-1)
-  lim1 = (1.e-15, 0.25e-13)
+  
   
   df_params.plot(x='mother_phi',
                  y='bud_phi',
-                 kind='scatter',
+                 kind='scatter', 
                  color=df_params['MSD'],
                  colormap='winter',
                  s=75,
                  fontsize='xx-large',
                  ax=ax[0])
+  
+  set_colorbar_title('MSD',cbID=2)
+
+
 
   ax[0].plot(np.arange(1.e-7,5.e-1,5e-6),
             np.arange(1.e-7,5.e-1,5e-6),
             'r--',
-            alpha = 0.3,
-            linewidth=2)
+            alpha = 0.2,
+            linewidth=2,
+            color = 'gray')
+
   ax[0].set_xscale("log")#, nonposx='clip')
   ax[0].set_xlim(lim0)
   ax[0].set_yscale("log")#, nonposy='clip')
@@ -241,18 +268,30 @@ def plot_parameter_distribution(df_params):
                  s=75,
                  fontsize='xx-large',
                  ax=ax[1])
+  
+  set_colorbar_title('MSD', cbID=3)
 
-  ax[1].plot(np.arange(1.e-15, 0.25e-13, 0.5e-15),
-            np.arange(1.e-15, 0.25e-13, 0.5e-15),
-            'r--',
-            alpha = 0.3,
-            linewidth=2)
 
-  ax[1].set_xlabel('$k_{nutrient}$', fontsize='xx-large')
-  ax[1].set_ylabel('$k_{deg}$', fontsize='xx-large')
-  lim1 = (1.e-15, 0.25e-13)
+
+  ax[1].plot(k_nut, fitted_kdeg,'g--')
+  ax[1].plot(np.arange(0, max_k + max_k / 10, max_k / 10),
+            np.arange(0, max_k+ max_k / 10, max_k / 10),
+            '--',
+            alpha = 0.2,
+            linewidth=2,
+            color='gray')
+
+  ax[1].set_xlabel('$k_{nutrient}$, mM $s^{-1}$ $um^{-2}$', fontsize='xx-large')
+  ax[1].set_ylabel('$k_{deg}$, mM $s^{-1}$ $um^{-3}$', fontsize='xx-large')
+  lim1 = (1.e-15, max_k)
   ax[1].set_xlim(lim1)
   ax[1].set_ylim(lim1)
+  
+
+
+
+
+
   plt.tight_layout()
   plt.savefig('plots/fitted__MB_phi__k_parallel.png')
 
@@ -280,21 +319,25 @@ def plot_parameter_distribution(df_params):
 if __name__ == '__main__':
 
     #budding_start=100  
-    max_time=400
+    max_time=400*60
     cells_to_test=4
-    mothercells_data, daughtercells_data, time_data = model_data.load_data()
+    mothercells_data, daughtercells_data, time_data_min = model_data.load_data()
+    
+    time_data = [x*60 for x in time_data_min]
+    
     
     #mothercells_data = reduce_time_in_data(mothercells_data, time_data, max_time=400)
     #daughtercells_data = reduce_time_in_data(daughtercells_data, time_data, max_time=400)
     #time_data = reduce_time_in_data(time_data, time_data, max_time=400)
     
     # 1 for test on cells_to_test
-    if 0:
+    
+    if 1:
       mothercells_data = mothercells_data[:cells_to_test, :]
       daughtercells_data = daughtercells_data[:cells_to_test, :]
 
     
-    time_data = time_data * 60 # convert time to seconds
+    #time_data = time_data * 60 # convert time to seconds
     model = simulate.load_model('volume_mother_and_bud.txt')
     
     parameters_to_fit = ['budding_start','k_nutrient', 'k_deg', 'mother_phi', 'bud_phi']
@@ -305,7 +348,7 @@ if __name__ == '__main__':
     #params_ini = {'budding_start': budding_start}   # not mentioned initial parameters are taken from the model                          
     
     # 1 for fitting                             
-    if 0:
+    if 1:
       df_params = fit_all_mother_bud(model, 
                                      mothercells_data, 
                                      daughtercells_data, 
@@ -315,7 +358,7 @@ if __name__ == '__main__':
                                      max_time=max_time,
                                      tolerance_factor = 1)
   
-      df_params.to_csv('fitted_parameters_parallel.csv')
+      #df_params.to_csv('fitted_parameters_parallel.csv')
     else:
       df_params = pd.read_csv('fitted_parameters_parallel.csv', index_col=0)
 
@@ -328,15 +371,17 @@ if __name__ == '__main__':
                            df_params,
                            additional_concentrations,
                            max_time=max_time,
-                           cols=2,
-                           max_cell_ID=6)
+                           cols=4,
+                           max_cell_ID=0)
 
-      if 1:
-        plt.savefig('plots/fits_parallel_6.png')
+      if 0:
+        plt.savefig('plots/fits_parallel.png')
        
       #df_stacked = plot_parameter_distribution(df_params)  
     else:
       df_stacked = plot_parameter_distribution(df_params)
+ 
+
 
 
 

@@ -68,7 +68,13 @@ def time_vector_to_steps_and_stop(time_vector):
     steps = len(time_vector)
     return steps, stop
 
-def simulate_model_for_parameter_values(parameter_values, model, parameter_ids, time_vector, additional_model_parameters={}, additional_concentrations={}, initial_assignments={}):
+def simulate_model_for_parameter_values(parameter_values,
+                                                   model,
+                                           parameter_ids,
+                                           time_vector, 
+                                           additional_model_parameters={},
+                                            additional_concentrations={},
+                                             initial_assignments={}):
     param_dict = dict(zip(parameter_ids, parameter_values))
     model.resetAll()
     if initial_assignments == {}:
@@ -119,8 +125,12 @@ if __name__ == '__main__':
 
 
     #additional_model_parameters = {}
-    simulation_result = simulate_model_for_parameter_values( p_values, model, parameters_to_fit,  np.linspace(0,400, 10000), additional_model_parameters=additional_model_parameters,
-    additional_concentrations=additional_concentrations )
+    simulation_result = simulate_model_for_parameter_values( p_values,
+                                                                 model,
+                                                                 parameters_to_fit,
+                                                                 np.linspace(0,400, 10000),
+                                                                 additional_model_parameters=additional_model_parameters,
+                                                                 additional_concentrations=additional_concentrations )
     #simulation_result = simulate_model(model, end_time=500)
     plot((simulation_result,), legend=True)
 

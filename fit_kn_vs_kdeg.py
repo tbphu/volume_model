@@ -47,14 +47,14 @@ def fit_cmaes(paras_0, data, sigma0=4e-16, tolx=1e-20): #bounds_min, bounds_max,
 
 
 
-def plot(x,y,f_y):
+def plot(x,y,f_y,):
 
 
 	plt.figure(1, figsize=(5,5))
-	plt.scatter(x,y)#, color='b')
-	plt.plot(x,f_y, ls='--', dashes=(3,8))
-	plt.xlabel('$k_{nutient}$',fontsize='large')
-	plt.ylabel('$k_{deg}$',fontsize='large')
+	plt.scatter(x,y, color='gray', s=14)#, color='b')
+	plt.plot(x,f_y, ls='--', dashes=(8,8), color='red')
+	plt.xlabel('$k_{nutrient}$, mM $s^-1$ $um^-2$',fontsize='large')
+	plt.ylabel('$k_{deg}$, mM $s^-1$ $um^-3$',fontsize='large')
 	plt.xlim(0,3.e-14)
 	plt.ylim(0,3.e-14)
 	plt.show()
@@ -80,14 +80,16 @@ def fit_k(fitted_parameters, paras_0=[1.,0.],sigma0=3):
 	print('MSD:{0}'.format(msd)	)
 	return f_paras
 
-
-
+def fit_linear_k(fitted_parameters):
+	fitted_parameters.sort_values('k_nutrient',inplace=True)
+	pop, pcov = curve_fit(linF,fitted_parameters['k_nutrient'],fitted_parameters['k_deg'])
+	return pop, pcov
 
 if __name__ == '__main__':
 
 
 	fitted_parameters = pd.read_csv('fitted_parameters_parallel.csv', index_col=0)
-	fitted_parameters.sort(['k_nutrient'],inplace=True)
+	fitted_parameters.sort_values(['k_nutrient'],inplace=True)
 	#fitted_parameters['k_nutrient'] = fitted_parameters['k_nutrient']*1.e+14
 	#fitted_parameters['k_deg'] = fitted_parameters['k_deg']*1.e+14
 	#fitted_parameters.plot(['k_nutrient'],['k_deg'], kind='scatter')
@@ -104,8 +106,8 @@ if __name__ == '__main__':
  	#calculated_k_nut = linear_f(fitted_parameters['k_nutrient'],f_paras[0])
  	#plot(fitted_parameters['k_nutrient'],fitted_parameters['k_deg'],calculated_k_nut)
 
- 	bounds=([-np.inf,-1e-14],[np.inf,1e-14])
- 	pop, pcov = curve_fit(linF,fitted_parameters['k_nutrient'],fitted_parameters['k_deg'])#,bounds=bounds)
+ 	
+ 	pop, pcov  = curve_fit(linF,fitted_parameters['k_nutrient'],fitted_parameters['k_deg'])#,bounds=bounds)
  	
  	plot (fitted_parameters['k_nutrient'],
  			fitted_parameters['k_deg'],

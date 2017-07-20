@@ -78,12 +78,11 @@ model volume_rheology
   R_ref' = dR_ref  
   
   // nutrient uptake and consumptions
-  //k_nutrient = 1.03290153e-14 //3.5e-16; // mM/s/um^2   
-  //k_deg = 1.19204038e-14 //3.8e-16;
-  k_nutrient = 2.e-16 //3.5e-15; // mM/s/um^2 
+  k_nutrient_0 = 2.e-16 //3.5e-15; // mM/s/um^2 
+  k_nutrient = k_nutrient_0
   k_scaling_factor = 1.27 // 1/um 
-  k_deg := 1.2*k_nutrient //  mM/s/um^3 
-  //k_deg = 3.8e-15;
+  k_deg = k_scaling_factor*k_nutrient //  mM/s/um^3 
+  //k_deg = 2.8e-16;
   
   k_transport = 0 
   

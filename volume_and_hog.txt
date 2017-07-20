@@ -30,7 +30,7 @@ model volume_hog
   #hog.V_ratio := ;
   
   compartment cyto
-  cyto is hog.cyto;
+  hog.cyto is vol.V_tot_liter;
   cyto is vol.V_tot_liter;
 
   ### Changeset 1: we model a generic internal osmolarity c_i and Glyc_in is part of the internal osmolarity.
@@ -39,12 +39,14 @@ model volume_hog
   hog.Glyc_in = Glyc_in_0;
   vol.c_i = c_i_0 - Glyc_in_0; # as this part of c_i, namely Glyc_in is explicitly modeled within the Hog1 model. 
 
-  k_nutrient_0 is vol.k_nutrient_0
-  vol.k_nutrient = k_nutrient_0 - hog.k_Glyc_s0;
-
   glycerol_correction_factor = Glyc_in_0/c_i_0;
-  hog.Acc:   => hog.Glyc_in; cyto*glycerol_correction_factor*hog.k_Glyc_s0;
-  #hog.k_Glyc_s1   = glycerol_correction_factor*56140* 1e-3 / 60;   #mM per sec
+
+ # k_nutrient_0 is vol.k_nutrient_0
+ # vol.k_nutrient = k_nutrient_0 - glycerol_correction_factor * hog.k_Glyc_s0;
+
+  
+  hog.Acc:   => hog.Glyc_in ; cyto * glycerol_correction_factor * hog.k_Glyc_s0;
+  Deg:   hog.Glyc_in => ; cyto * vol.k_deg;
  
   vol.pi_i := (vol.c_i + hog.Glyc_in + hog.Pbs2 + hog.Pbs2PP + hog.Hog1c + hog.Hog1PPc + hog.Hog1n + hog.Hog1PPn + hog.Yt) * vol.R * vol.T; 
 
@@ -53,7 +55,7 @@ model volume_hog
   hog.alpha       = 0.18 * 1e6; # original value from zhike was: 0.398 * 1e6
   hog.gamma       = 0.18 * 1e6; # originial value from zhike 0.9626 * 1e6
 
-  #hog.beta   = 0.4;   #mM per sec
+  hog.beta   = 0.4;   #mM per sec
 
   hog.hill_exponent = 48; # original value from zhike was: 8
   hog.hill_exponent_eflux = 48;  # original value from zhike was: 12

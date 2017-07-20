@@ -6,14 +6,20 @@ function modulo(a, b)
   a - b*floor(a/b);
 end
 
+function init_a(a)
+  floor(a);
+end
+
 model volume_rheology
 
   // compartments
   compartment V_tot_liter;
   compartment extra = 1;
   dr_b := dR_ref * 0.2;
-  r_b = 0.3
-  r_os = 0.1
+  r_b_0 = 0.3
+  r_os_0 = 0.1
+  r_b = r_b_0
+  r_os = r_os_0
   r := r_os + r_b  
   dr := dr_os + dr_b
   r_os' = dr_os 
@@ -25,9 +31,9 @@ model volume_rheology
   V_tot_liter := V_tot_fl * 1e-15; // um^3
  
   // species
-  c_i_0 = 319.17; // mM
   species c_e in extra = 240; // mM hat Bjoern gemessen (SD-F)
-  species c_i in V_tot_liter = c_i_0; // mM
+  species c_i in V_tot_liter = 319.17 ; // mM
+  c_i_0 = 319.17; // mM # ATTENTION: must be equal to species c_i initial value, cause inheriting antimony models depend on this value! 
 
   // mother and bud connection
   bud_start = 1;
@@ -92,8 +98,11 @@ model volume_rheology
   
   //osmo event
   shock_event_time = 7200
-  shoch_set_c_e = 500 # mM
-  at time > shock_event_time: c_e = shoch_set_c_e
+  hyposhock_event_time = 7600
+  shock_set_c_e = 240 # mM
+  hyposhock_set_c_e = 240 # mM
+  at time > shock_event_time: c_e = shock_set_c_e
+  at time > hyposhock_event_time: c_e = hyposhock_set_c_e
    
 
 

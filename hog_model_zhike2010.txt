@@ -4,6 +4,10 @@
 # Translated manually to Antimony:
 ###
 
+# function MAX(a, b)
+#   piecewise(a, a >= b, b);
+# end
+
 model hog_zhike
 	#units
 	#unit fl = 1e-15 liter;
@@ -21,16 +25,23 @@ model hog_zhike
 
 
 	# variables
-	species Pbs2 in cyto 	= 0.1231 * 1e-3; 	#mM  
-	species	Pbs2PP in cyto 	= 0.000616 * 1e-3; 	#mM 
-	species	Hog1c in cyto 	= 0.3426 * 1e-3; 	#mM
-	species	Hog1PPc in cyto = 0.004443 * 1e-3; 	#mM
-	species	Hog1n in nuc	= 0.2918 * 1e-3; 	#mM
-	species	Hog1PPn in nuc  = 0.00338 * 1e-3; 	#mM
-	species	Glyc_in in cyto = 576000 * 1e-3; 	#mM
-	species	Yt in cyto		= 1.811 * 1e-3; 	#mM
+	Pbs2_0 					= 0.1231 * 1e-3; 	#mM  
+	Pbs2PP_0		 		= 0.000616 * 1e-3; 	#mM 
+	Hog1c_0		  			= 0.3426 * 1e-3; 	#mM
+	Hog1PPc_0		 		= 0.004443 * 1e-3; 	#mM
+	Hog1n_0					= 0.2918 * 1e-3; 	#mM
+	Hog1PPn_0		  	 	= 0.00338 * 1e-3; 	#mM
+	Glyc_in_0				= 576000 * 1e-3; 	#mM
+	Yt_0					= 1.811 * 1e-3; 	#mM
 
-	Glyc_in_0 				= 576000 * 1e-3; 	#mM
+	species Pbs2 in cyto 	= Pbs2_0			#mM  
+	species	Pbs2PP in cyto 	= Pbs2PP_0 			#mM 
+	species	Hog1c in cyto 	= Hog1c_0			#mM
+	species	Hog1PPc in cyto = Hog1PPc_0 		#mM
+	species	Hog1n in nuc	= Hog1n_0	 		#mM
+	species	Hog1PPn in nuc  = Hog1PPn_0 		#mM
+	species	Glyc_in in cyto = Glyc_in_0 		#mM
+	species	Yt in cyto		= Yt_0				#mM
 								
 	z1						= 0.00338 * 1e-3; 	#mM
 	z2						= 0.00338 * 1e-3; 	#mM
@@ -57,7 +68,7 @@ model hog_zhike
 	T               = 303.15;          		# K	
 
 
-	
+
 	
 
 	alpha 			= 0.398  * 1e6;			# Pa 	
@@ -96,9 +107,8 @@ model hog_zhike
 	pi_i := (n_0+Glyc_in*V_cyt)*R*T/V_os;# * 1e-6;
 	V_ratio := -G*Lp*(pi_t+pi_e-pi_i)/V_cell;
 	#totalHog1PP := 1e-3 * (Hog1PPc*cyto+Hog1PPn*nuc)*N_a/n_Hog1_total; #mmol<->mol: 1e-3
-	#totalHog1PP := 1e-3 * 1e-15 * (Hog1PPc*cyto+Hog1PPn*nuc)*N_a/n_Hog1_total; # for unitconversion fl<->l: 1e-15 mmol<->mol: 1e-3
-	totalHog1PP := (Hog1PPc*cyto+Hog1PPn*nuc)/(Hog1c*cyto+Hog1n*nuc+Hog1PPc*cyto+Hog1PPn*nuc); # fraction of phosphorylated Hog molecules per total Hog1 molecules
-	n_totalHog1 := Hog1c*cyto+Hog1n*nuc+Hog1PPc*cyto+Hog1PPn*nuc # This is conserved.
+	totalHog1PP := (Hog1PPc*cyto+Hog1PPn*nuc) / n_totalHog1; # fraction of phosphorylated Hog molecules per total Hog1 molecules
+	n_totalHog1 := (Hog1c*cyto+Hog1n*nuc+Hog1PPc*cyto+Hog1PPn*nuc) # This is conserved.
 	Glyc_ex := 0;     							# for flow cell system with microfluidic device	
 		
 	hill_exponent = 8;
@@ -138,4 +148,5 @@ model hog_zhike
 	z4'= 4*(z3-z4)/tau
 	V_os'=-G*Lp*(pi_t+pi_e-pi_i)
 
+	#at time > 6000: NaCl = 2500
 end

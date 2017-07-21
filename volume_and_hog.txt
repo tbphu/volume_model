@@ -40,11 +40,7 @@ model volume_hog
   vol.c_i = c_i_0 - Glyc_in_0; # as this part of c_i, namely Glyc_in is explicitly modeled within the Hog1 model. 
 
   glycerol_correction_factor = Glyc_in_0/c_i_0;
-
- # k_nutrient_0 is vol.k_nutrient_0
- # vol.k_nutrient = k_nutrient_0 - glycerol_correction_factor * hog.k_Glyc_s0;
-
-  
+ 
   hog.Acc:   => hog.Glyc_in ; cyto * glycerol_correction_factor * hog.k_Glyc_s0;
   Deg:   hog.Glyc_in => ; cyto * vol.k_deg;
  
@@ -55,7 +51,7 @@ model volume_hog
   hog.alpha       = 0.18 * 1e6; # original value from zhike was: 0.398 * 1e6
   hog.gamma       = 0.18 * 1e6; # originial value from zhike 0.9626 * 1e6
 
-  hog.beta   = 0.4;   #mM per sec
+  hog.beta   = 0.6; # original value from zhike was: 0.2992
 
   hog.hill_exponent = 48; # original value from zhike was: 8
   hog.hill_exponent_eflux = 48;  # original value from zhike was: 12

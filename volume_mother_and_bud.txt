@@ -8,10 +8,11 @@ model volume_mother_and_bud
 
   budding_start = 3600;
 
+  withSF = 0;
   k_nutrient = 3.5e-15; // mM/s/um^2   
-  k_deg = 3.8e-15;
+  k_deg_0 = 3.8e-15;
   bud.k_nutrient := k_nutrient;
-  bud.k_deg := k_deg;
+  bud.k_deg_0 := k_deg_0;
   
   // diffrent cell wall elasticity of mother and bud
   mother.E_3d := 2.58e6
@@ -20,7 +21,7 @@ model volume_mother_and_bud
 
 
   mother.k_nutrient := k_nutrient;
-  mother.k_deg := k_deg;
+  mother.k_deg_0 := k_deg_0;
 
   //mother.r_os = 0.1
   //bud.r_os = 0.01

@@ -320,7 +320,7 @@ if __name__ == '__main__':
 
     #budding_start=100  
     max_time=400*60
-    cells_to_test=4
+    cells_to_test=2
     mothercells_data, daughtercells_data, time_data_min = model_data.load_data()
     
     time_data = [x*60 for x in time_data_min]
@@ -332,7 +332,7 @@ if __name__ == '__main__':
     
     # 1 for test on cells_to_test
     
-    if 1:
+    if 0:
       mothercells_data = mothercells_data[:cells_to_test, :]
       daughtercells_data = daughtercells_data[:cells_to_test, :]
 
@@ -340,7 +340,7 @@ if __name__ == '__main__':
     #time_data = time_data * 60 # convert time to seconds
     model = simulate.load_model('volume_mother_and_bud.txt')
     
-    parameters_to_fit = ['budding_start','k_nutrient', 'k_deg', 'mother_phi', 'bud_phi']
+    parameters_to_fit = ['budding_start','k_nutrient', 'k_deg_0', 'mother_phi', 'bud_phi','mother_r_os_0']
     
 
     additional_concentrations = {'[mother_c_i]': 325,
@@ -358,7 +358,7 @@ if __name__ == '__main__':
                                      max_time=max_time,
                                      tolerance_factor = 1)
   
-      #df_params.to_csv('fitted_parameters_parallel.csv')
+      df_params.to_csv('fitted_parameters_parallel.csv')
     else:
       df_params = pd.read_csv('fitted_parameters_parallel.csv', index_col=0)
 

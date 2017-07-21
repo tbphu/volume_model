@@ -119,8 +119,8 @@ if __name__ == '__main__':
     #additional_model_parameters = {'[c_i]': 325,
     #                                'r_os': 10}
 
-    additional_concentrations = {'[mother_c_i]': 325,
-                                    '[bud_c_i]': 325 }
+    additional_concentrations = {'init([mother_c_i])': 325,
+                                    'init([bud_c_i])': 325 }
     
 
 

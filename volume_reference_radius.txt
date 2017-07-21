@@ -6,14 +6,20 @@ function modulo(a, b)
   a - b*floor(a/b);
 end
 
+function init_a(a)
+  floor(a);
+end
+
 model volume_rheology
 
   // compartments
   compartment V_tot_liter;
   compartment extra = 1;
   dr_b := dR_ref * 0.2;
-  r_b = 0.3 // um
-  r_os = 0.1 // um
+  r_b_0 = 0.3
+  r_os_0 = 0.1
+  r_b = r_b_0
+  r_os = r_os_0
   r := r_os + r_b  
   dr := dr_os + dr_b
   r_os' = dr_os 
@@ -26,7 +32,9 @@ model volume_rheology
  
   // species
   species c_e in extra = 240; // mM hat Bjoern gemessen (SD-F)
-  species c_i in V_tot_liter = 319.17; // mM
+  species c_i in V_tot_liter = 319.17 ; // mM
+  c_i_0 = 319.17; // mM # ATTENTION: must be equal to species c_i initial value, cause inheriting antimony models depend on this value! 
+
 
   // mother and bud connection
   bud_start = 1;
@@ -70,12 +78,11 @@ model volume_rheology
   R_ref' = dR_ref  
   
   // nutrient uptake and consumptions
-  //k_nutrient = 1.03290153e-14 //3.5e-16; // mM/s/um^2   
-  //k_deg = 1.19204038e-14 //3.8e-16;
-  k_nutrient = 2.e-16 //3.5e-15; // mM/s/um^2 
+  k_nutrient_0 = 2.e-16 //3.5e-15; // mM/s/um^2 
+  k_nutrient = k_nutrient_0
   k_scaling_factor = 1.27 // 1/um 
-  k_deg := 1.2*k_nutrient //  mM/s/um^3 
-  //k_deg = 3.8e-15;
+  k_deg = k_scaling_factor*k_nutrient //  mM/s/um^3 
+  //k_deg = 2.8e-16;
   
   k_transport = 0 
   
@@ -89,8 +96,14 @@ model volume_rheology
   //at time > 7200: k_transport = 2.5e-10
   
   //osmo event
-  //at time > 7200: c_e = 1000
-    
+
+  shock_event_time = 7200
+  hyposhock_event_time = 7600
+  shock_set_c_e = 240 # mM
+  hyposhock_set_c_e = 240 # mM
+  at time > shock_event_time: c_e = shock_set_c_e
+  at time > hyposhock_event_time: c_e = hyposhock_set_c_e
+
 
 
 end

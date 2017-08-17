@@ -1,0 +1,64 @@
+import "volume_reference_radius.txt"
+
+model volume_twobud
+
+  mother: volume_rheology();  
+  bud_a: volume_rheology();
+  bud_b: volume_rheology();
+  
+  mother.withSF = 0;
+  bud_a.withSF = 0;
+  bud_b.withSF = 0;
+
+  k_nutrient = 2.8e-16; // mM/s/um^2   
+  k_deg_0 = 1.27*2.8e-16;
+
+  # k_nutrient = 1e-14; // mM/s/um^2   
+  # k_deg_0 = 1.3e-14;
+
+  bud_a.k_nutrient = k_nutrient;
+  bud_a.k_deg_0 = k_deg_0;
+  bud_b.k_nutrient = k_nutrient;
+  bud_b.k_deg_0 = k_deg_0;
+  mother.k_nutrient = k_nutrient;
+  mother.k_deg_0 = k_deg_0;
+  
+  mother.E_3d := 2.58e6
+  # bud_a.E_3d := 2.58e6
+  # bud_b.E_3d := 2.58e6
+  bud_a.E_3d := 3.3e6
+  bud_b.E_3d := 3.3e6
+
+  mother.phi = 1.0e-5
+  q = 1.0e3
+
+  #bud_a.c_i = mother.c_i;
+  #bud_b.c_i = mother.c_i;
+
+  k_diff_c = 1.
+  k_diff_v = 1.
+
+
+  mother.c_i -> bud_a.c_i; k_diff_c * (mother.c_i - bud_a.c_i);   
+  mother.c_i -> bud_b.c_i; k_diff_c * (mother.c_i - bud_b.c_i);
+
+  mother.dV_exchange  :=  -(k_diff_v * (mother.pi_t - bud_a.pi_t) + k_diff_v * (mother.pi_t - bud_b.pi_t));
+  bud_a.dV_exchange  := k_diff_v * (mother.pi_t - bud_a.pi_t);
+  bud_b.dV_exchange  := k_diff_v * (mother.pi_t - bud_b.pi_t);
+
+  mother.r_os_0 = 2;
+  mother.r_b_0 = 0.1; 
+  
+  bud_a.r_os_0 = 0.2;
+  bud_a.r_b_0  = 0.1;
+  bud_a.phi  := mother.phi * q;
+
+
+  bud_b.r_os_0 = bud_a.r_os_0;
+  bud_b.r_b_0 = bud_a.r_b_0;
+  bud_b.phi  := mother.phi * q;
+
+
+
+
+end

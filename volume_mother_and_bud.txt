@@ -31,14 +31,12 @@ model volume_mother_and_bud
   at time > budding_start: bud_start_in_the_bud = 1;
   at time > budding_start: bud.c_i = mother.c_i;
 
-  tom = 1.
-
   // solute dffusion between mother and bud
-  c_i_diffusion_coeff = tom#1e-3//1e-7; // idea: apparent diffusion coefficient (in addition it describes the permeability through the budneck)
+  c_i_diffusion_coeff = 1.0//1e-3//1e-7; // idea: apparent diffusion coefficient (in addition it describes the permeability through the budneck)
   mother.c_i -> bud.c_i; c_i_diffusion_coeff * (mother.c_i - bud.c_i) * bud_start_in_the_bud ;   
 
   // water exchange between mother and bud
-  mother_bud_water_perm = tom#1e-2 // 1e-5;
+  mother_bud_water_perm = 1.0//1e-2 // 1e-5;
   mother.dV_exchange :=  -mother_bud_water_perm * (mother.pi_t - bud.pi_t) * bud_start_in_the_bud;
   bud.dV_exchange :=   mother_bud_water_perm * (mother.pi_t - bud.pi_t) * bud_start_in_the_bud;
 

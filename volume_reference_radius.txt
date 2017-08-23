@@ -82,7 +82,7 @@ model volume_rheology
   k_nutrient = k_nutrient_0
   k_scaling_factor = 1.27 // 1/um 
 
-  withSF = 1
+  withSF = 0
   k_deg_0 = 2.8e-16
   k_deg := k_scaling_factor*k_nutrient*(withSF)  +  k_deg_0*(1-withSF)//  mM/s/um^3 
   //k_deg = 2.8e-16;

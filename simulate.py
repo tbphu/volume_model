@@ -12,8 +12,14 @@ plt.style.use('ggplot')
 math_functions = {'pi': math.pi}
 
 
-def plot(data_tuple, subplot=True, show=True, legend=True):
-    time = data_tuple[0]['time']
+def plot(data_tuple, subplot=True, show=True, legend=True, time_scale='s'):
+    assert time_scale in ['s','min']
+    if time_scale == 's':
+        time = data_tuple[0]['time'] # orginal line
+    else:
+        time = [x/60 for x in data_tuple[0]['time']]
+        
+
     var_names = data_tuple[0].keys()
     var_names.remove('time')
     rows_and_cols = np.ceil(np.sqrt(len(var_names)))

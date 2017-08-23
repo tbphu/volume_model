@@ -58,17 +58,26 @@ def fit_basin(initial_params, additional_arguments, bounds_min, bounds_max, basi
 
 def fit_cmaes(initial_params, additional_arguments, bounds_min, bounds_max, sigma0=4e-16, tolx=1e-20):
     options = cma.CMAOptions()
-    #options.set('tolfun', 1e-14)
+    #options.set('tolfun', 1e-16)
     options['tolx'] = tolx
     options['bounds'] = (bounds_min, bounds_max)
     param_vec = np.array(initial_params)
+    
     p_min = max(param_vec.min(), 1e-20)
+    print('param vec = {0}\\ p_min ={1}'.format(param_vec,p_min))
     options['scaling_of_variables'] = param_vec / p_min
+    #options['CMA_stds']=np.sqrt(param_vec)*1e5
+    print( options['scaling_of_variables'])
+#   
+    #options['CMA_stds']=param_vec
+#
+
     result = cma.fmin(compute_objective_function, 
                       x0=initial_params,
                       sigma0=sigma0,
                       options=options,
                       args=additional_arguments)
+
     return result[0]
 
 def define_bounds(parameters_to_fit, reference_params, bounds={}):
@@ -82,8 +91,8 @@ def define_bounds(parameters_to_fit, reference_params, bounds={}):
         xmin[k] = bounds[p_id][0] 
         xmax[k] = bounds[p_id][1]
       else:
-        xmin[k] = reference_params[p_id]*0.0005 
-        xmax[k] = reference_params[p_id]*5000   
+        xmin[k] = reference_params[p_id]*0.005 
+        xmax[k] = reference_params[p_id]*500   
 
     print('bounds: {0}'.format(bounds))    
     print('fitted parameters: {0}'.format(parameters_to_fit))    
@@ -114,7 +123,7 @@ def fit_model_to_data(model,
     initial_params = [reference_params[p_id] for p_id in parameters_to_fit]
     model = simulate.select_model_timecourses(model, data.keys())
     additional_arguments = (model, parameters_to_fit, data, additional_model_parameters, additional_concentrations)
-    
+    print(initial_params)
     '''if bounds != {}:
         xmin = [bounds[p_id][0] for p_id in parameters_to_fit]
         xmax = [bounds[p_id][1] for p_id in parameters_to_fit] 
@@ -128,7 +137,7 @@ def fit_model_to_data(model,
     if optimizer == 'basin':
         return fit_basin(initial_params, additional_arguments, xmin, xmax)
     elif optimizer == 'cmaes':
-        return fit_cmaes(initial_params, additional_arguments, xmin, xmax, tolx=tolx)
+        return fit_cmaes(initial_params, additional_arguments, xmin, xmax,sigma0=4e-17, tolx=tolx)
     else:
         raise Exception('unknown optimization method')
 
@@ -159,7 +168,11 @@ def plot_fitting_result_and_data(model,
                                                                           additional_concentrations=additional_concentrations)
     if 0: # delete the initial budsize in the plot 
       simulation_result_dict = truncate_initial_budsize(simulation_result_dict, data)
-    simulate.plot((simulation_result_dict, data), subplot=subplot, show=show, legend=legend)
+    simulate.plot((simulation_result_dict, data),
+                                 subplot=subplot,
+                                       show=show,
+                                   legend=legend,
+                                    time_scale='min')
     
 
 def fit_model_to_all_cells(model, 

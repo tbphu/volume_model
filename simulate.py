@@ -56,6 +56,7 @@ def set_integrator_options(model):
     #model.integrator.variable_step_size = True
     return model
 
+
 def simulate_model(model, end_time, steps=100):
     model = set_integrator_options(model)
     simulation_result = model.simulate(0, end_time, steps)
@@ -75,12 +76,13 @@ def time_vector_to_steps_and_stop(time_vector):
     return steps, stop
 
 def simulate_model_for_parameter_values(parameter_values,
-                                                   model,
-                                           parameter_ids,
-                                           time_vector, 
-                                           additional_model_parameters={},
-                                            additional_concentrations={},
-                                             initial_assignments={}):
+                                        model,
+                                        parameter_ids,
+                                        time_vector, 
+                                        additional_model_parameters={},
+                                        additional_concentrations={},
+                                        initial_assignments={}):
+    #print('model paras {0}'.format(parameter_values))
     param_dict = dict(zip(parameter_ids, parameter_values))
     model.resetAll()
     if initial_assignments == {}:
@@ -90,8 +92,7 @@ def simulate_model_for_parameter_values(parameter_values,
     model = model_data.set_model_parameters(model, additional_concentrations)
     model = evaluate_initial_assignments(model, initial_assignments)
     steps, end_time = time_vector_to_steps_and_stop(time_vector)
-
-    #print model['']#
+    #print(model_data.get_model_parameters_as_dict(model))
     simulation_result_dict = simulate_model(model, end_time, steps)
     return simulation_result_dict
 
@@ -111,10 +112,10 @@ if __name__ == '__main__':
     #additional_model_parameters = {'mother_r_os': 1.239061741911077, 'budding_start': 129, 'bud_r_os': 1.2239599669205963}
     
 
-    parameters_to_fit = ['k_nutrient', 'k_deg', 'c_i_diffusion_coeff', 'mother_phi', 'bud_phi'] 
+    parameters_to_fit = ['k_nutrient', 'k_deg_0', 'mother_phi', 'bud_phi'] 
     #p_values = [2.190823e-14, 2.646816e-14, 6.268674e-14, 1.250327e-02,  0.004421 ]
-    p_values = [2.190823e-14, 2.646816e-14, 1e-12, 1.250327e-02,  0.004421 ]
-    additional_model_parameters = {'mother_r_os': 1.211627511265936, 'budding_start': 129, 'bud_r_os': 1.203897177254015}
+    p_values = [2.190823e-16, 2.646816e-16, 1.250327e-02,  0.004421 ]
+    additional_model_parameters = {'mother_r_os': 1.211627511265936, 'budding_start': 12000, 'bud_r_os': 1.203897177254015}
 
 
     #model = select_model_timecourses()
@@ -125,19 +126,35 @@ if __name__ == '__main__':
     #additional_model_parameters = {'[c_i]': 325,
     #                                'r_os': 10}
 
-    additional_concentrations = {'init([mother_c_i])': 325,
-                                    'init([bud_c_i])': 325 }
+    additional_concentrations = {'init([mother_c_i])': 400,
+                                    'init([bud_c_i])': 400 }
     
 
 
     #additional_model_parameters = {}
-    simulation_result = simulate_model_for_parameter_values( p_values,
-                                                                 model,
-                                                                 parameters_to_fit,
-                                                                 np.linspace(0,400, 10000),
-                                                                 additional_model_parameters=additional_model_parameters,
-                                                                 additional_concentrations=additional_concentrations )
+    #simulation_result = simulate_model_for_parameter_values( p_values,
+    #                                                         model,
+    #                                                         parameters_to_fit,
+    #                                                         np.linspace(0,400, 1000),
+    #                                                        additional_model_parameters=additional_model_parameters,
+    #                                                         additional_concentrations=additional_concentrations )
     #simulation_result = simulate_model(model, end_time=500)
-    plot((simulation_result,), legend=True)
+    
+
+    parameter_ids = ['k_nutrient', 'k_deg_0', 'mother_phi', 'bud_phi', 'mother_r_os'] 
+    parameter_values = [2.190823e-16, 2.646816e-16, 1.250327e-02,  0.0004421, 0.3]
+    time_vector = np.linspace(0,400*60,100*60)
+
+
+
+    simulation_result_dict = simulate_model_for_parameter_values(parameter_values,
+                                        model,
+                                        parameter_ids,
+                                        time_vector,
+                                        additional_model_parameters=additional_model_parameters,
+                                        additional_concentrations=additional_concentrations,
+                                        initial_assignments={})
+
+    plot((simulation_result_dict,), legend=True)
 
 

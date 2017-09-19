@@ -7,6 +7,7 @@ import tellurium as tet
 import pandas as pd
 import seaborn as sns
 from multiprocessing import Pool
+#from functools import partial
 import fit_kn_vs_kdeg
 
 plt.style.use('ggplot')
@@ -73,10 +74,13 @@ def fit_single_mother_and_bud(model,
                               cell_id,
                               parameters_to_fit, 
                               additional_concentrations={},
+                              additional_model_parameters={},
                               max_time=400,
                               params_ini={},
                               log=True,
-                              bounds={}):
+                              bounds={},
+                              tolfun=0.1,
+                              sigma0_log_notlog = (1e-1,4e-17)):
   additional_model_parameters={}
   data = get_data_dict_for_cell(mothercells_data, daughtercells_data, time_data, cell_id)
   data_trunc = model_data.truncate_data(data)
@@ -102,11 +106,13 @@ def fit_single_mother_and_bud(model,
                                                  data_trunc, 
                                                  parameters_to_fit,   
                                                  'cmaes', 
-                                                 #additional_model_parameters=additional_model_parameters,
+                                                 additional_model_parameters=additional_model_parameters,
                                                  additional_concentrations=additional_concentrations,
                                                  params_ini=params_ini,
                                                  bounds=bounds,
-                                                 log=log)
+                                                 log=log,
+                                                 tolfun=tolfun,
+                                                 sigma0_log_notlog = sigma0_log_notlog)
   print(fitted_parameters)
   log=False
   msd = fit_data.compute_objective_function(fitted_parameters, 
@@ -119,8 +125,11 @@ def fit_single_mother_and_bud(model,
 
 
 
-def f(cell_id): # function for parallel fitting 
+def f(cell_id): ##importent): 
+
+      # function for parallel fitting 
     print 'fitting cell no %d out of %d' %(cell_id, len(mothercells_data))
+    print(sigma0_log_notlog)
 
     fitted_parameters, msd = fit_single_mother_and_bud(model, 
                                                        mothercells_data, 
@@ -128,31 +137,26 @@ def f(cell_id): # function for parallel fitting
                                                        time_data, 
                                                        cell_id, 
                                                        parameters_to_fit, 
-                                                       additional_concentrations,
+                                                       additional_concentrations=additional_concentrations,
+                                                       additional_model_parameters=additional_model_parameters,
                                                        max_time=max_time,
-                                                       params_ini={},#params_ini,
+                                                       params_ini=params_ini,
                                                        log=log,
-                                                       bounds=bounds)
+                                                       bounds=bounds,
+                                                       tolfun=tolfun,
+                                                       sigma0_log_notlog=sigma0_log_notlog)
     
     return fitted_parameters.tolist() + [msd]
   
 
-def fit_all_mother_bud(model,
-                       mothercells_data,
+def fit_all_mother_bud(mothercells_data,
                        daughtercells_data,
-                       time_data,
-                       parameters_to_fit,
-                       additional_concentrations={},
-                       max_time=400,
-                       params_ini={},
-                       log=True,
-                       bounds={}):
+                       parameters_to_fit):
 
 
   
   assert len(mothercells_data) == len(daughtercells_data)
-  
-  p = Pool(20) 
+  p = Pool(30) 
   cell_ids = range(len(mothercells_data))
   fitted_params_list = p.map(f, cell_ids)
   df_params = pd.DataFrame(fitted_params_list)
@@ -167,6 +171,7 @@ def plot_fitting_for_all(model,
                          time_data,
                          df_params,
                          additional_concentrations={},
+                         additional_model_parameters={},
                          max_time=400,
                          cols=4,
                          max_cell_ID=0):
@@ -181,7 +186,7 @@ def plot_fitting_for_all(model,
 
   assert len(df_params) == len(mothercells_data)
   df_params = df_params.copy()
-  df_params = df_params.drop('MSD', axis=1)
+  df_params.drop('MSD', inplace=True, axis=1)
   no_cols = cols
   no_rows = np.ceil(float(len(Cell_IDs))/no_cols)
   fig = plt.figure(1, figsize=(8,8))
@@ -206,7 +211,7 @@ def plot_fitting_for_all(model,
                                             data_trunc, 
                                             parameters_to_fit, 
                                             subplot=False, 
-                                            #additional_model_parameters=additional_model_parameters,
+                                            additional_model_parameters=additional_model_parameters,
                                             additional_concentrations=additional_concentrations,
                                             legend=False,
                                             observables=[])
@@ -214,9 +219,9 @@ def plot_fitting_for_all(model,
       print('could not simulate for cell Nr. {0}'.format(cell_id))
 
     budstart = fitted_parameters['budding_start']/60
-    nr_of_points=10
-    y=np.arange(0,100,nr_of_points)
-    x=[budstart]*nr_of_points
+    nr_of_points = 10
+    y = np.arange(0,100,nr_of_points)
+    x = [budstart]*nr_of_points
     plt.plot(x,y)       
 
 
@@ -289,8 +294,8 @@ def plot_parameter_distribution(df_params):
 
 
 
-  ax[0].plot(np.arange(1.e-7,5.e-1,5e-6),
-            np.arange(1.e-7,5.e-1,5e-6),
+  ax[0].plot(np.arange(1.e-7, 5.e-1, 5e-6),
+            np.arange(1.e-7, 5.e-1, 5e-6),
             'r--',
             alpha = 0.2,
             linewidth=2,
@@ -362,7 +367,7 @@ def plot_parameter_distribution(df_params):
 if __name__ == '__main__':
 
     max_time=500*60
-    cells_to_test=1
+    cells_to_test=4
     mothercells_data, daughtercells_data, time_data_min = model_data.load_data()
 
     # convert time to seconds
@@ -373,26 +378,34 @@ if __name__ == '__main__':
       log=True
     else:
       log=False
+
+    sigma0_log_notlog = (1e-1,1e-17)  
+
+    # 1 tolerance of the optimizer at the minimum
+    tolfun=1e-6  
     
     # 1 for test on cells_to_test
-    if 0:
+    if 1:
       mothercells_data = mothercells_data[:cells_to_test, :]
       daughtercells_data = daughtercells_data[:cells_to_test, :]
     
     model = simulate.load_model('volume_mother_and_bud.txt')
     
-    parameters_to_fit = ['budding_start','k_nutrient', 'k_deg_0', 'mother_phi', 'bud_phi','mother_r_os_0']
-    #parameters_to_fit = ['budding_start','k_nutrient', 'k_deg_0', 'mother_phi', 'mother_r_os_0']
+    parameters_to_fit = ['budding_start','k_nutrient', 'k_scaling_factor', 'mother_phi', 'bud_phi','mother_r_os_0']
+#    parameters_to_fit = ['budding_start','k_nutrient', 'k_deg_0', 'mother_phi', 'bud_phi','mother_r_os_0']
      
 
-    additional_concentrations = {'init([mother_c_i])': 319.17,
-                                 'init([bud_c_i])': 319.17 }
+    additional_concentrations = {'init([mother_c_i])': 319.4,
+                                 'init([bud_c_i])': 319.4 }
+    additional_model_parameters = {'withSF': 1,
+                                   'mother_bud_water_perm':1,}                             
     #params_ini = {'budding_start': budding_start}   # not mentioned initial parameters are taken from the model                          
+    params_ini = {'k_scaling_factor': 1.2}  
     
     bounds={}
-    bounds['mother_phi']= [5.e-6, 5.e-1]
-    bounds['bud_phi']= [1.e-5, 5.e-1 ]
-    bounds['k_nutrient_']= [9.e-16, 9.e-17]
+    #bounds['mother_phi']= [5.e-6, 5.e-1]
+    #bounds['bud_phi']= [1.e-5, 5.e+2 ]
+    #bounds['k_nutrient_']= [9.e-16, 9.e-17]
     #bounds['k_deg_0']= [1.e-15, 1.e-17]
     #bounds['mother_r_os'] = [0.1,2]
 
@@ -400,19 +413,13 @@ if __name__ == '__main__':
 
     # 1 for fitting                             
     if 1:
-      df_params = fit_all_mother_bud(model, 
-                                     mothercells_data, 
+      df_params = fit_all_mother_bud(mothercells_data, 
                                      daughtercells_data, 
-                                     time_data, 
-                                     parameters_to_fit, 
-                                     additional_concentrations,
-                                     max_time=max_time,
-                                     log=log,
-                                     bounds=bounds)
+                                     parameters_to_fit)
      
-      df_params.to_csv('fitted_parameters_parallel.csv')
+      df_params.to_csv('fitted_parameters_parallel_norm.csv')
     else:
-      df_params = pd.read_csv('fitted_parameters_parallel.csv', index_col=0)
+      df_params = pd.read_csv('fitted_parameters_parallel_norm.csv', index_col=0)
 
     if 1:
       
@@ -421,12 +428,13 @@ if __name__ == '__main__':
                            daughtercells_data,
                            time_data,
                            df_params,
-                           additional_concentrations,
+                           additional_concentrations=additional_concentrations,
+                           additional_model_parameters=additional_model_parameters,
                            max_time=max_time,
                            cols=4,
-                           max_cell_ID=0)
+                           max_cell_ID=3)
 
-      if 0:
+      if 1:
         plt.savefig('plots/fits_parallel.png')
        
       #df_stacked = plot_parameter_distribution(df_params)  

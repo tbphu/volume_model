@@ -84,6 +84,7 @@ def set_model_parameters(model, params):
                 
     return model
 
+
 def set_model_parameters_from_dataframe(model, df, param_list=[],row=0):
     param_dict = dict(df.iloc[row])
     if param_list != []:

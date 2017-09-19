@@ -8,14 +8,12 @@ model volume_mother_and_bud
 
   budding_start = 3600;
 
-  withSF=0
+  withSF = 0
   mother.withSF := withSF;
   bud.withSF :=withSF;
   k_nutrient = 2e-16//2.5e-16; // mM/s/um^2   
   k_deg_0 = 2.5e-16//2.8e-16;
   k_scaling_factor = 1.27
-
-
 
   bud.k_nutrient := k_nutrient;
   bud.k_deg_0 := k_deg_0;
@@ -24,8 +22,9 @@ model volume_mother_and_bud
   mother.k_nutrient := k_nutrient;
   mother.k_deg_0 := k_deg_0;
   mother.k_scaling_factor := k_scaling_factor;
+
   
-  // diffrent cell wall elasticity of mother and bud
+// diffrent cell wall elasticity of mother and bud
   
   
   mother.E := 2.58e6/0.75
@@ -34,13 +33,15 @@ model volume_mother_and_bud
   budE = 3.3e6
   bud.E := (budE*testE +(1-testE)*3.30e6)/0.75   // Mother E*1.28 as calculated from the measurements 
 
+
   extens_factor = 1.e+2
   mother.phi = 1.e-4  // neu
   bud.phi := mother.phi*extens_factor
 
-  //bud.phi = 1.e-2
+//bud.phi = 1.e-2
 
-
+  mother.k_nutrient := k_nutrient;
+  mother.k_deg_0 := k_deg_0;
 
   //mother.r_os = 0.1
   //bud.r_os = 0.01
@@ -50,13 +51,12 @@ model volume_mother_and_bud
   at time > budding_start: bud_start_in_the_bud = 1;
   at time > budding_start: bud.c_i = mother.c_i;
 
-
   // solute dffusion between mother and bud
-  c_i_diffusion_coeff =  1//1e-3//1e-7; // idea: apparent diffusion coefficient (in addition it describes the permeability through the budneck)
+  c_i_diffusion_coeff = 1.0//1e-3//1e-7; // idea: apparent diffusion coefficient (in addition it describes the permeability through the budneck)
   mother.c_i -> bud.c_i; c_i_diffusion_coeff * (mother.c_i - bud.c_i) * bud_start_in_the_bud ;   
 
   // water exchange between mother and bud
-  mother_bud_water_perm = 1//1e-2 // 1e-5;
+  mother_bud_water_perm = 1.0//1e-2 // 1e-5;
   mother.dV_exchange :=  -mother_bud_water_perm * (mother.pi_t - bud.pi_t) * bud_start_in_the_bud;
   bud.dV_exchange :=   mother_bud_water_perm * (mother.pi_t - bud.pi_t) * bud_start_in_the_bud;
 

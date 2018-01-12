@@ -1,4 +1,4 @@
-function MAX(a, b)
+function MAXIMUM(a, b)
   piecewise(a, a >= b, b);
 end
 
@@ -75,7 +75,7 @@ model volume_rheology
   
   #pi_t'  = E * 2 * d / (1-nu) * (dr * R_ref - r * dR_ref) / (R_ref * r^2) - dr / r * pi_t
   pi_t'  = E * 2 * d / (1-nu) * (dr/r^2 - dR_ref/(R_ref*r)) - dr / r * pi_t 
-  dR_ref := phi * R_ref * r / (2 * d) * MAX(pi_t - pi_tc, 0) * bud_start;
+  dR_ref := phi * R_ref * r / (2 * d) * MAXIMUM(pi_t - pi_tc, 0) * bud_start;
   R_ref' = dR_ref  
   
   // nutrient uptake and consumptions

@@ -100,7 +100,7 @@ model hog_zhike
 
 	#algebraic equations
 	pi_e := pi_e_0+w*NaCl;
-	pi_t := MAX(pi_t_0*(V_os-V_pit0_os)/(34.8-V_pit0_os),0)
+	pi_t := MAXIMUM(pi_t_0*(V_os-V_pit0_os)/(34.8-V_pit0_os),0)
 	V_cell := V_os+V_b;
 	V_cyt := f_V_cyt*V_cell;
 	V_nuc := f_V_nuc*V_cell;

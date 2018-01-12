@@ -170,8 +170,8 @@ plt.imshow(im)
 plt.axis('off')
 
 plt.tight_layout()
-plt.savefig('figures/analytical_solution.png',dpi=300)
-plt.savefig('figures/analytical_solution.eps')
+#plt.savefig('figures/analytical_solution.png',dpi=300)
+#plt.savefig('figures/analytical_solution.eps')
 plt.show()
 
 # # 'Doubling time' is depending on r0:

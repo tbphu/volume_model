@@ -108,6 +108,8 @@ plt.xlabel("Time [minutes]")
 #plt.ylim(-5,110)
 plt.legend()
 
+#plt.savefig('figures/analytical_solution_supplement.png',dpi=300)
+#plt.savefig('figures/analytical_solution_supplement.eps')
 
 
 fig = plt.figure(figsize=(8,8))
@@ -137,8 +139,6 @@ plt.ylim(-5,110)
 #plt.legend(loc='upper right',ncol=2)
 plt.legend()
 
-#plt.savefig('figures/analytical_solution_supplement.png',dpi=300)
-#plt.savefig('figures/analytical_solution_supplement.eps')
 
 #print a,b,c,np.exp(-1./a * np.sqrt(b-c*r0)-1),(-1./a * np.sqrt(b-c*r0))
 
@@ -206,10 +206,11 @@ for some_scaling_factor_for_both in reversed(vec_of_scaling_both_k):
     r_t = np.array(map(lambda foo: radius(foo,**{'F0':F0,'a':a,'b':b,'c':c,'t0':t0}),time))
     r_polynom_t = map(lambda foo: radius_polynom(foo,**{'F0':F0,'a':a,'b':b,'c':c,'t0':t0}),time)
     
-    if some_scaling_factor_for_both != 1.0:
-        label=r'$%s \cdot k_{upt.}$; $%s \cdot k_{cons.}$'%(some_scaling_factor_for_both,some_scaling_factor_for_both)
-    else:
-        label=r'$k_{upt.}$ = %s; $k_{cons.}$ = %s'%(k_nutrient,k_deg)
+    label=r'$\frac{k_{upt.}}{k_{cons.}} = %s \cdot %s \mu m$'%(str(some_scaling_factor_for_both),str(round(k_nutrient/k_deg,2)))
+    #if some_scaling_factor_for_both != 1.0:
+    #    label=r'$%s \cdot k_{upt.}$; $%s \cdot k_{cons.}$'%(some_scaling_factor_for_both,some_scaling_factor_for_both)
+    #else:
+    #    label=r'$k_{upt.}$ = %s; $k_{cons.}$ = %s'%(k_nutrient,k_deg)
     plt.plot(time/60,4./3. * np.pi * r_t**3,label=label)
     #plt.plot(time/60,r_polynom_t)
     r_inf = (-a**2 + b)/c
@@ -231,14 +232,14 @@ for some_k in vec_of_k_scaling_factor:
     F0 = set_F0(a,b,c,r0)
     r_t = np.array(map(lambda foo: radius(foo,**{'F0':F0,'a':a,'b':b,'c':c,'t0':t0}),time))
     r_polynom_t = map(lambda foo: radius_polynom(foo,**{'F0':F0,'a':a,'b':b,'c':c,'t0':t0}),time)
-    plt.plot(time/60,4./3. * np.pi * r_t**3,label=r'$\frac{k_{upt.}}{k_{cons.}} = %s$'%str(1./new_k_scaling_factor))
+    plt.plot(time/60,4./3. * np.pi * r_t**3,label=r'$\frac{k_{upt.}}{k_{cons.}} = %s \mu m$'%str(1./new_k_scaling_factor))
     #plt.plot(time/60,r_polynom_t)
     r_inf = (-a**2 + b)/c
     plt.axhline((4./3. * np.pi * r_inf**3),color = 'black',linestyle=':')
 plt.ylabel("Total volume [fL]")
 plt.xlabel("Time [minutes]")
 
-plt.legend(loc=(0.6,0.45))
+plt.legend(loc=(0.5,0.45))
 
 
 

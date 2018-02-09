@@ -206,7 +206,8 @@ for some_scaling_factor_for_both in reversed(vec_of_scaling_both_k):
     r_t = np.array(map(lambda foo: radius(foo,**{'F0':F0,'a':a,'b':b,'c':c,'t0':t0}),time))
     r_polynom_t = map(lambda foo: radius_polynom(foo,**{'F0':F0,'a':a,'b':b,'c':c,'t0':t0}),time)
     
-    label=r'$\frac{k_{upt.}}{k_{cons.}} = %s \cdot %s \mu m$'%(str(some_scaling_factor_for_both),str(round(k_nutrient/k_deg,2)))
+    #label=r'$\frac{k_{upt.}}{k_{cons.}} = %s \cdot %s \mu m$'%(str(some_scaling_factor_for_both),str(round(k_nutrient/k_deg,2)))
+    label=r'$k_{scaling} = %s $'%(str(some_scaling_factor_for_both))
     #if some_scaling_factor_for_both != 1.0:
     #    label=r'$%s \cdot k_{upt.}$; $%s \cdot k_{cons.}$'%(some_scaling_factor_for_both,some_scaling_factor_for_both)
     #else:

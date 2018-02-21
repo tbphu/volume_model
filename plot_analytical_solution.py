@@ -6,7 +6,7 @@ import FigureTools as FT
 sns.set_style("ticks")
 
 import matplotlib.gridspec as gridspec
-gs = gridspec.GridSpec(4, 4)
+gs = gridspec.GridSpec(3, 4)
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 # constants
@@ -112,10 +112,25 @@ plt.legend()
 #plt.savefig('figures/analytical_solution_supplement.eps')
 
 
-fig = plt.figure(figsize=(8,8))
+#################################################
+################## 
 
-ax1 = plt.subplot(gs[2:4,0:2])
-plt.gca().add_artist(FT.figure_numbering('C'))
+
+fig = plt.figure(figsize=(12,9))
+
+
+
+plt.subplot(gs[0:3,0:3])
+#plt.gca().add_artist(FT.figure_numbering('A'))
+plt.text(0,0,'A',size=18)
+from PIL import Image
+im = Image.open('figures/sketch_volume_model.svg.png')
+plt.imshow(im)
+plt.axis('off')
+
+
+ax1 = plt.subplot(gs[0,3])
+plt.gca().add_artist(FT.figure_numbering('B'))
 
 
 
@@ -137,66 +152,14 @@ plt.xlabel("Time [minutes]")
 #plt.setp(ax1.get_xticklabels(), visible=False)
 plt.ylim(-5,110)
 #plt.legend(loc='upper right',ncol=2)
-plt.legend()
-
-
-#print a,b,c,np.exp(-1./a * np.sqrt(b-c*r0)-1),(-1./a * np.sqrt(b-c*r0))
-
-#plt.figure(figsize=(8,8))
-
-#plt.plot(time/60,4./3. * np.pi * r_taylor_series_simple_t**3 - 4./3. * np.pi * r_t**3,label='error')
-
-#plt.show()
-
-
-# ax1 = plt.subplot(gs[2:3,0:2])
-# plt.gca().add_artist(FT.figure_numbering('C'))
-
-# #k_nutrient = 0.1
-# #k_deg = 0.1
-# b = set_b(Lp,pi_t,pi_e,k_nutrient,R,T)
-# c = set_c(k_deg,Lp,R ,T)
-# F0 = set_F0(a,b,c,r0)
-# r_t = np.array(map(lambda foo: radius(foo,**{'F0':F0,'a':a,'b':b,'c':c,'t0':t0}),time))
-# r_taylor_series_t = np.array(map(lambda foo: radius_taylor_series(foo,**{'F0':F0,'a':a,'b':b,'c':c,'t0':t0}),time))
-# r_taylor_series_simple_t = np.array(map(lambda foo: radius_taylor_series_simple(foo,**{'F0':F0,'a':a,'b':b,'c':c,'t0':t0}),time))
-# r_polynom_t = np.array(map(lambda foo: radius_polynom(foo,**{'F0':F0,'a':a,'b':b,'c':c,'t0':t0}),time))
-
-
-# plt.plot(time/60,4./3. * np.pi * r_t**3,color = sns.color_palette()[2],label='a')
-# plt.plot(time/60,4./3. * np.pi * r_taylor_series_t**3,':',color = sns.color_palette()[2],linewidth=4.,label='b')
-# #plt.plot(time/60,4./3. * np.pi * r_taylor_series_simple_t**3,label='simple')
-
-# plt.plot(time/60,4./3. * np.pi * r_polynom_t**3,label='c')
-
-# plt.plot(time/60,4./3. * np.pi * r_taylor_series_t**3 - 4./3. * np.pi * r_t**3,color = 'red',label='d')
-
-# plt.axhline(0,color = 'grey',linestyle=':')
-# r_inf = (-a**2 + b)/c
-# plt.axhline((4./3. * np.pi * r_inf**3),color = 'black',linestyle=':')
-# plt.ylabel("Total volume [fL]")
-# plt.xlabel("Time [minutes]")
-# #plt.setp(ax1.get_xticklabels(), visible=False)
-# plt.ylim(-5,120)
-# plt.legend(loc='upper right',ncol=2)
-
-# ax2 = plt.subplot(gs[3:4,0:2])
-# #ax2 = plt.subplot(gs[3:4,0:2],sharex=ax1)
-# plt.gca().add_artist(FT.figure_numbering('D'))
-# #ax2 = inset_axes(ax, width=2, height=1, loc = 3, bbox_to_anchor=(0.2, 0.1),bbox_transform=ax.figure.transFigure)
-# plt.plot(time/60,4./3. * np.pi * r_taylor_series_t**3 - 4./3. * np.pi * r_t**3,color = 'red',label='Difference w/o Taylor series')
-# plt.axhline(0,color = 'grey',linestyle=':')
-# plt.ylim(-0.1,0.1)
-# plt.ylabel("Difference [fL]")
-# plt.xlabel("Time [minutes]")
-# plt.legend()
+plt.legend(loc='upper right',fontsize=8)
 
 
 vec_of_scaling_both_k = [0.5,1.,1.5]
 vec_of_k_scaling_factor = [1.,1./0.75,1./0.5]
 
-plt.subplot(gs[0:2,2:])
-plt.gca().add_artist(FT.figure_numbering('B'))
+plt.subplot(gs[1,3])
+plt.gca().add_artist(FT.figure_numbering('C'))
 for some_scaling_factor_for_both in reversed(vec_of_scaling_both_k):
     new_k_deg = some_scaling_factor_for_both * k_scaling_factor * k_nutrient
     new_k_nutrient = some_scaling_factor_for_both * k_nutrient  
@@ -223,7 +186,7 @@ plt.legend()
 
 
 
-plt.subplot(gs[2:,2:4])
+plt.subplot(gs[2,3])
 plt.gca().add_artist(FT.figure_numbering('D'))
 for some_k in vec_of_k_scaling_factor:
     new_k_scaling_factor = some_k
@@ -240,17 +203,8 @@ for some_k in vec_of_k_scaling_factor:
 plt.ylabel("Total volume [fL]")
 plt.xlabel("Time [minutes]")
 
-plt.legend(loc=(0.5,0.45))
-
-
-
-
-plt.subplot(gs[0:2,0:2])
-plt.gca().add_artist(FT.figure_numbering('A'))
-from PIL import Image
-im = Image.open('figures/sketch_volume_model.svg.png')
-plt.imshow(im)
-plt.axis('off')
+#plt.legend(loc=(0.5,0.45))
+plt.legend(loc=(0.52,0.45),fontsize=7)
 
 plt.tight_layout()
 #plt.savefig('figures/analytical_solution.png',dpi=300)

@@ -53,11 +53,13 @@ model volume_rheology
   // geometric calculations
   G := 4*pi*r^2 // surface of sphere in um^2
  
+  //inpermeability
+  sigma=1
   // water flow over membrane
   Lp = 1.19e-6; // um/s/Pa #Klipp 2005
   dV_exchange = 0;
   dr_exchange := ((V_tot_fl + dV_exchange)*3/4/pi)^(1/3) - r;
-  dr_os := (- Lp *(pi_t + pi_e - pi_i) + dr_exchange ) * bud_start
+  dr_os := (- Lp *(pi_t + sigma*(pi_e - pi_i)) + dr_exchange ) * bud_start
   
   // plastic expansion rate 
   pi_t = 0.20e6; // Pa
@@ -98,9 +100,11 @@ model volume_rheology
   
    // equalization of ci and ce  at time 7200
 
-  //at time > 7200: k_nutrient = 0
-  //at time > 7200: k_transport = 2.5e-10
+  t_permeability = 7200
   
+  //at time > 7200: k_nutrient = 0
+  at time > t_permeability: k_transport = 2.5e-10
+  //at time > t_permeability: sigma = 0
   //osmo event
 
   shock_event_time = 7200

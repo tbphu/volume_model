@@ -431,8 +431,8 @@ if __name__ == '__main__':
                            additional_concentrations=additional_concentrations,
                            additional_model_parameters=additional_model_parameters,
                            max_time=max_time,
-                           cols=4,
-                           max_cell_ID=3)
+                           cols=4)#,
+                           #max_cell_ID=3)
 
       if 1:
         plt.savefig('plots/fits_parallel.png')

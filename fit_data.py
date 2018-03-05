@@ -250,7 +250,8 @@ def plot_fitting_result_and_data(model,
                                  subplot=True, 
                                  show=True,
                                  legend=True,
-                                 observables=[]):
+                                 observables=[],
+                                 only_data=False):
     obs = list(observables)
     obs.extend(data.keys())
     #print(obs)
@@ -265,11 +266,24 @@ def plot_fitting_result_and_data(model,
                                                                           additional_concentrations=additional_concentrations)
     if 0: # delete the initial budsize in the plot 
       simulation_result_dict = truncate_initial_budsize(simulation_result_dict, data)
-    simulate.plot((simulation_result_dict, data),
-                                 subplot=subplot,
-                                       show=show,
-                                   legend=legend,
-                                    time_scale='min')
+    '''simulate.plot((simulation_result_dict, data),
+                                             subplot=subplot,
+                                                   show=show,
+                                               legend=legend,
+                                                time_scale='min')'''
+    if only_data:
+         simulate.plot((data,),
+                                  subplot=subplot,
+                                        show=show,
+                                    legend=legend,
+                                     time_scale='min',
+                                     only_data=only_data)
+    else:  
+        simulate.plot((simulation_result_dict, data),
+                                   subplot=subplot,
+                                         show=show,
+                                     legend=legend,
+                                      time_scale='min')
 
 
 
@@ -566,7 +580,8 @@ if __name__ == '__main__':
   #    plot_liklihood(df_dict, para_to_test)
 
 
-  if 0: # plot all
+  if 1: # plot all
+    only_data=False
     plt.style.use('seaborn-whitegrid')
     plt.style.use('seaborn-colorblind')
     #for i,style in enumerate(plt.style.available):
@@ -580,7 +595,7 @@ if __name__ == '__main__':
 
       fitted_parameters = df_p.iloc[cellID]
       parameters_to_fit = df_p.columns
-       #data dict
+      
       data = {'time': np.array(time_data), 'mother_V_tot_fl': mothercells_data[cellID, :],'bud_V_tot_fl': daughtercells_data[cellID, :]}
       data_trunc = get_data_trunc(data,max_time)
 
@@ -590,6 +605,7 @@ if __name__ == '__main__':
       ax = plt.subplot(rows_and_cols[0] ,rows_and_cols[1], cellID + 1)
       ax.set_title('cell ID: {0}'.format(cellID))
       try:
+
         plot_fitting_result_and_data(model,
                                       fitted_parameters,
                                       data_trunc,
@@ -598,7 +614,9 @@ if __name__ == '__main__':
                                       observables=observables,
                                       additional_model_parameters=additional_model_parameters,
                                       additional_concentrations=additional_concentrations,
-                                      legend=False)
+                                      legend=False,
+                                      only_data=only_data)
+
       except:
         print('fail to plot simulation of cellID' + str(cellID))
       ax.set_ylabel('volume, fl', fontsize='large')
@@ -611,7 +629,8 @@ if __name__ == '__main__':
 
 
     plt.tight_layout()
-    plt.savefig('plots/all_cells_fitted_1.png', dpi=300)  
+    plt.savefig('plots/all_cells_fitted_data.png', dpi=300)
+
 
 
 

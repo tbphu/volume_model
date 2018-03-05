@@ -13,7 +13,7 @@ import pandas as pd
 math_functions = {'pi': math.pi}
 
 
-def plot(data_tuple, subplot=True, show=True, legend=True, time_scale='s'):
+def plot(data_tuple, subplot=True, show=True, legend=True, time_scale='s', only_data=False):
     assert time_scale in ['s','min']
     if time_scale == 's':
         time = data_tuple[0]['time'] # orginal line

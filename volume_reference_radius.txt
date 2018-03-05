@@ -1,4 +1,4 @@
-function MAX(a, b)
+function F_MAX(a, b)
   piecewise(a, a >= b, b);
 end
 
@@ -63,7 +63,7 @@ model volume_rheology
   pi_t = 0.20e6; // Pa
   pi_tc_0 = 0.2e6; // Pa
   d = 0.115; // um Goldenbogen, Giese 2016
-  phi = 1.e-3; // 1/Pa/s 1.e-4
+  phi = 1.e-4; // 1/Pa/s 1.e-4
   pi_tc := pi_tc_0
  
  // wall mechanics
@@ -74,7 +74,7 @@ model volume_rheology
   E = modulus_adjustment * E_3d; // Pa Goldenbogen, Giese 2016    
   
   pi_t'  = E * 2 * d / (1-nu) * (dr * R_ref - r * dR_ref) / (R_ref * r^2) - dr / r * pi_t 
-  dR_ref := phi * R_ref * r / (2 * d) * MAX(pi_t - pi_tc, 0) * bud_start;
+  dR_ref := phi * R_ref * r / (2 * d) * F_MAX(pi_t - pi_tc, 0) * bud_start;
   R_ref' = dR_ref  
   
   // nutrient uptake and consumptions

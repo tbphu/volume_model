@@ -70,9 +70,9 @@ model volume_rheology
  
  // wall mechanics
   nu = 0.5 // 
-  #R_ref = r/(1 + (1 - nu) * (pi_t * r) / (E * 2 * d)) # R_ref' ~ r' ??? 'Plus' should be a 'minus' - Mistake from deduction?
+  R_ref = r/(1 + (1 - nu) * (pi_t * r) / (E * 2 * d)) # R_ref' ~ r' ??? 'Plus' should be a 'minus' - Mistake from deduction?
   #R_ref = 1 / (1/r - pi_t / (E * 2 * d / (1-nu)) ) # R_ref' ~ r' ???
-  R_ref = r / exp(pi_t  * r * (1-nu) / (2 * d * E))
+  #R_ref = r / exp(pi_t  * r * (1-nu) / (2 * d * E))
   modulus_adjustment = (1-nu^2)^(-1); // _ umwandlung 3d in 2d Youngs modulus (Goldenbogen, Giese 2016  )
   E_3d =  2.58e6 // Pa
   E = modulus_adjustment * E_3d; // Pa Goldenbogen, Giese 2016    

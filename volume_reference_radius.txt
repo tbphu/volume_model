@@ -100,8 +100,8 @@ model volume_rheology
   
    // equalization of ci and ce  at time 7200
 
-  t_permeability = 7200
-  
+  t_permeability = 99999
+    
   //at time > 7200: k_nutrient = 0
   at time > t_permeability: k_transport = 2.5e-10
   //at time > t_permeability: sigma = 0

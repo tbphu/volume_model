@@ -6,7 +6,7 @@ import FigureTools as FT
 sns.set_style("ticks")
 
 import matplotlib.gridspec as gridspec
-gs = gridspec.GridSpec(3, 4)
+gs = gridspec.GridSpec(3,2)
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 # constants
@@ -116,11 +116,11 @@ plt.legend()
 ################## 
 
 
-fig = plt.figure(figsize=(12,9))
+fig = plt.figure(figsize=(9,12))
 
 
 
-plt.subplot(gs[0:3,0:3])
+plt.subplot(gs[0:2,0:2])
 #plt.gca().add_artist(FT.figure_numbering('A'))
 plt.text(0,0,'A',size=18)
 from PIL import Image
@@ -129,7 +129,7 @@ plt.imshow(im)
 plt.axis('off')
 
 
-ax1 = plt.subplot(gs[0,3])
+ax1 = plt.subplot(gs[2,0])
 plt.gca().add_artist(FT.figure_numbering('B'))
 
 
@@ -155,13 +155,17 @@ plt.ylim(-5,110)
 plt.legend(loc='upper right',fontsize=8)
 
 
-vec_of_scaling_both_k = [0.5,1.,1.5]
-vec_of_k_scaling_factor = [1.,1./0.75,1./0.5]
+#vec_of_scaling_both_k = [0.5,1.,1.5]
+vec_of_scaling_both_k = [0.8,1.,1.2]
+vec_of_k_scaling_factor = [1./0.75,1./0.5]
+#vec_of_k_scaling_factor = [1.,1./0.75]
 
-plt.subplot(gs[1,3])
+colors = sns.color_palette()
+
+plt.subplot(gs[2,1])
 plt.gca().add_artist(FT.figure_numbering('C'))
-for some_scaling_factor_for_both in reversed(vec_of_scaling_both_k):
-    new_k_deg = some_scaling_factor_for_both * k_scaling_factor * k_nutrient
+for i,some_scaling_factor_for_both in enumerate(reversed(vec_of_scaling_both_k)):
+    new_k_deg = some_scaling_factor_for_both * k_nutrient
     new_k_nutrient = some_scaling_factor_for_both * k_nutrient  
     b = set_b(Lp,pi_t,pi_e,new_k_nutrient,R,T)
     c = set_c(new_k_deg,Lp,R ,T)
@@ -170,25 +174,24 @@ for some_scaling_factor_for_both in reversed(vec_of_scaling_both_k):
     r_polynom_t = map(lambda foo: radius_polynom(foo,**{'F0':F0,'a':a,'b':b,'c':c,'t0':t0}),time)
     
     #label=r'$\frac{k_{upt.}}{k_{cons.}} = %s \cdot %s \mu m$'%(str(some_scaling_factor_for_both),str(round(k_nutrient/k_deg,2)))
-    label=r'$k_{scaling} = %s $'%(str(some_scaling_factor_for_both))
+    label=r'$\frac{k_{upt.}}{k_{cons.}} = %s \mu m$; '%str(1.) + r'$k_{scaling} = %s $'%(str(some_scaling_factor_for_both))
     #if some_scaling_factor_for_both != 1.0:
     #    label=r'$%s \cdot k_{upt.}$; $%s \cdot k_{cons.}$'%(some_scaling_factor_for_both,some_scaling_factor_for_both)
     #else:
     #    label=r'$k_{upt.}$ = %s; $k_{cons.}$ = %s'%(k_nutrient,k_deg)
-    plt.plot(time/60,4./3. * np.pi * r_t**3,label=label)
+    plt.plot(time/60,4./3. * np.pi * r_t**3, alpha = 1-(i*.3), color = 'green',label=label)
     #plt.plot(time/60,r_polynom_t)
     r_inf = (-a**2 + b)/c
     plt.axhline((4./3. * np.pi * r_inf**3),color = 'black',linestyle=':')
 plt.ylabel("Total volume [fL]")
 plt.xlabel("Time [minutes]")
 #plt.ylim(ymax=80)
-plt.legend()
+#plt.legend()
 
 
-
-plt.subplot(gs[2,3])
-plt.gca().add_artist(FT.figure_numbering('D'))
-for some_k in vec_of_k_scaling_factor:
+plt.subplot(gs[2,1])
+plt.gca().add_artist(FT.figure_numbering('C'))
+for i,some_k in enumerate(vec_of_k_scaling_factor):
     new_k_scaling_factor = some_k
     new_k_deg = new_k_scaling_factor * k_nutrient
     b = set_b(Lp,pi_t,pi_e,k_nutrient,R,T)
@@ -196,19 +199,25 @@ for some_k in vec_of_k_scaling_factor:
     F0 = set_F0(a,b,c,r0)
     r_t = np.array(map(lambda foo: radius(foo,**{'F0':F0,'a':a,'b':b,'c':c,'t0':t0}),time))
     r_polynom_t = map(lambda foo: radius_polynom(foo,**{'F0':F0,'a':a,'b':b,'c':c,'t0':t0}),time)
-    plt.plot(time/60,4./3. * np.pi * r_t**3,label=r'$\frac{k_{upt.}}{k_{cons.}} = %s \mu m$'%str(1./new_k_scaling_factor))
+    plt.plot(time/60,4./3. * np.pi * r_t**3, color = colors[i],label=r'$\frac{k_{upt.}}{k_{cons.}} = %s \mu m$'%str(1./(new_k_scaling_factor)))
+
     #plt.plot(time/60,r_polynom_t)
     r_inf = (-a**2 + b)/c
     plt.axhline((4./3. * np.pi * r_inf**3),color = 'black',linestyle=':')
 plt.ylabel("Total volume [fL]")
 plt.xlabel("Time [minutes]")
+plt.ylim(-5,130)
 
 #plt.legend(loc=(0.5,0.45))
-plt.legend(loc=(0.52,0.45),fontsize=7)
+plt.legend(loc=(0.01,0.6),fontsize=7)
+
+
+
+
 
 plt.tight_layout()
-#plt.savefig('figures/analytical_solution.png',dpi=300)
-#plt.savefig('figures/analytical_solution.eps')
+plt.savefig('figures/analytical_solution.png',dpi=300)
+plt.savefig('figures/analytical_solution.eps')
 
 
 plt.show()

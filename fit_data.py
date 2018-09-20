@@ -63,7 +63,7 @@ def compute_objective_function(parameter_values, model_output, parameter_ids, da
                                                                               additional_concentrations)
                                                                              
     except RuntimeError:
-        print 'Error simulating model for parameters %s' %parameter_values
+        print('Error simulating model for parameters %s' %parameter_values)
         return np.nan
     sqd = compute_sqd_distance(simulation_result_dict, data)
 

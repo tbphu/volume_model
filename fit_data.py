@@ -497,8 +497,15 @@ if __name__ == '__main__':
       pickle.dump(opt_result,f)   
     
   else:
-    with open('fitted_parameters_cellID_'+str(cellID)+'.p','rb') as f:
-      fitted_parameters=pickle.load(f)
+    pass
+    
+    # TODO: 
+    # this data seems to be in the wrong format (not readeable on linux)
+    # might be because it was written on OSX. We should not use pickle to serialize
+    # data, better: csv
+
+    #with open('data/fitted_parameters_cellID_'+str(cellID)+'.p','rb') as f:
+    #  fitted_parameters=pickle.load(f)
 
   if 0:
     print('parameters: {0} \n values: {1}'.format(parameters_to_fit,fitted_parameters))
@@ -539,7 +546,7 @@ if __name__ == '__main__':
         
       df.to_csv('fitted_parameters_parallel.csv')
   else:
-      df = pd.read_csv('fitted_parameters_parallel.csv', index_col=0) 
+      df = pd.read_csv('data/fitted_parameters_parallel.csv', index_col=0) 
 
 
   #check_likelihood_for_para(para_to_test, values)
@@ -610,6 +617,7 @@ if __name__ == '__main__':
                                       fitted_parameters,
                                       data_trunc,
                                       parameters_to_fit,
+                                      show=False,
                                       subplot=False,
                                       observables=observables,
                                       additional_model_parameters=additional_model_parameters,
@@ -629,7 +637,9 @@ if __name__ == '__main__':
 
 
     plt.tight_layout()
+
     plt.savefig('plots/all_cells_fitted_data.png', dpi=300)
+    plt.show()
 
 
 
